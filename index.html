@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#05070e" />
     <title>Asteroids Deluxe: Cyber Space Warfare</title>
     
     <!-- Google Fonts -->
@@ -15,6 +19,18 @@
 </head>
 <body class="sci-fi-theme">
     <div class="app-viewport">
+        <!-- PORTRAIT / LANDSCAPE PROMPT OVERLAY -->
+        <div id="landscapePrompt" class="landscape-prompt-overlay">
+            <div class="prompt-card">
+                <div class="phone-rotate-icon">📱🔄</div>
+                <h2>PLEASE ROTATE YOUR DEVICE</h2>
+                <p>Asteroids Deluxe is designed for <strong>Mobile Landscape Mode</strong> for maximum tactical view & controls.</p>
+                <button id="fullscreenLockBtn" class="btn btn-primary btn-fullscreen">
+                    🚀 ENTER LANDSCAPE FULLSCREEN
+                </button>
+            </div>
+        </div>
+
         <!-- CANVAS GAME VIEWPORT -->
         <canvas id="gameCanvas"></canvas>
 
@@ -37,6 +53,12 @@
 
             <div class="hud-group center-hud">
                 <div class="wave-badge" id="waveBadge">WAVE 1</div>
+                <div class="wave-objective-box">
+                    <span class="wave-objective" id="waveObjective">ASTEROIDS: 8 REMAINING</span>
+                    <div class="wave-progress-bar">
+                        <div class="wave-progress-fill" id="waveProgressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
                 <!-- Boss Health Bar Container (Hidden by default) -->
                 <div class="boss-health-container" id="bossHealthContainer" style="display: none;">
                     <div class="boss-name" id="bossName">ALIEN MOTHERSHIP</div>
@@ -70,6 +92,10 @@
                     <h1 class="logo-title">ASTEROIDS DELUXE</h1>
                 </div>
 
+                <div class="vault-balance">
+                    Banked Crystal Vault: <span class="cyan-text" id="vaultCrystalDisplay">💎 0</span>
+                </div>
+
                 <div class="mode-selector">
                     <button class="mode-tab active" data-mode="classic">🏆 Classic Survival</button>
                     <button class="mode-tab" data-mode="timerush">⏱️ Time Rush (3m)</button>
@@ -79,7 +105,7 @@
                 <h2 class="section-title">SELECT YOUR STARFIGHTER</h2>
                 <div class="ship-select-grid">
                     <!-- Viper Fighter -->
-                    <div class="ship-card selected" data-ship="viper">
+                    <div class="ship-card selected" data-ship="viper" id="shipCardViper">
                         <div class="ship-preview viper-preview">⚡</div>
                         <h3 class="ship-name">Viper Fighter</h3>
                         <p class="ship-desc">High speed, sharp handling & rapid laser output.</p>
@@ -91,7 +117,12 @@
                     </div>
 
                     <!-- Titan Cruiser -->
-                    <div class="ship-card" data-ship="titan">
+                    <div class="ship-card locked" data-ship="titan" id="shipCardTitan">
+                        <div class="lock-overlay" id="lockOverlayTitan">
+                            <span class="lock-icon">🔒</span>
+                            <span class="lock-cost">💎 150</span>
+                            <button class="btn btn-primary btn-unlock" id="unlockTitanBtn">UNLOCK SHIP</button>
+                        </div>
                         <div class="ship-preview titan-preview">🛡️</div>
                         <h3 class="ship-name">Titan Cruiser</h3>
                         <p class="ship-desc">Heavy armor, dual pulse cannons & blast shield.</p>
@@ -103,7 +134,12 @@
                     </div>
 
                     <!-- Quantum Phantom -->
-                    <div class="ship-card" data-ship="quantum">
+                    <div class="ship-card locked" data-ship="quantum" id="shipCardQuantum">
+                        <div class="lock-overlay" id="lockOverlayQuantum">
+                            <span class="lock-icon">🔒</span>
+                            <span class="lock-cost">💎 300</span>
+                            <button class="btn btn-primary btn-unlock" id="unlockQuantumBtn">UNLOCK SHIP</button>
+                        </div>
                         <div class="ship-preview quantum-preview">🌀</div>
                         <h3 class="ship-name">Quantum Phantom</h3>
                         <p class="ship-desc">Stealth phase-dash, homing missiles & warp tech.</p>
@@ -116,12 +152,17 @@
                 </div>
 
                 <div class="controls-guide">
-                    <span>🎮 Controls: <strong>WASD / Arrows</strong> to Thrust & Steer | <strong>SPACE</strong> Shoot | <strong>SHIFT</strong> Teleport | <strong>E / B</strong> Bomb</span>
+                    <span>📱 <strong>Mobile Controls:</strong> Left Thumb Joystick to Steer/Thrust | Right Buttons to Shoot & Special | <strong>PC:</strong> WASD/Space</span>
                 </div>
 
-                <button id="startGameBtn" class="btn btn-primary btn-launch">
-                    🚀 LAUNCH MISSION
-                </button>
+                <div class="start-actions">
+                    <button id="startGameBtn" class="btn btn-primary btn-launch">
+                        🚀 LAUNCH MISSION
+                    </button>
+                    <button id="helpBtn" class="btn btn-secondary btn-help">
+                        ❓ HOW TO PLAY
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -187,7 +228,70 @@
                             💎 <span id="costBomb">75</span>
                         </button>
                     </div>
+
+                    <!-- Crystal Magnet -->
+                    <div class="shop-item">
+                        <div class="item-icon">🧲</div>
+                        <div class="item-details">
+                            <h3>Crystal Magnet Field</h3>
+                            <p>Attract floating crystals from a distance</p>
+                            <div class="item-level" id="levelMagnet">Lvl 1/5</div>
+                        </div>
+                        <button class="btn btn-primary buy-btn" id="buyMagnetBtn" data-upgrade="magnet">
+                            💎 <span id="costMagnet">40</span>
+                        </button>
+                    </div>
+
+                    <!-- Extra Life Repair -->
+                    <div class="shop-item">
+                        <div class="item-icon">❤️</div>
+                        <div class="item-details">
+                            <h3>Hull Repair / Extra Life</h3>
+                            <p>Add 1 extra life to current starfighter</p>
+                            <div class="item-level" id="levelLife">Instant</div>
+                        </div>
+                        <button class="btn btn-primary buy-btn" id="buyLifeBtn" data-upgrade="life">
+                            💎 <span id="costLife">100</span>
+                        </button>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- HOW TO PLAY & CONTROLS TUTORIAL MODAL -->
+        <div id="helpModal" class="overlay-screen">
+            <div class="screen-card help-card">
+                <div class="drawer-header">
+                    <h2>❓ COMMANDER'S TACTICAL GUIDE</h2>
+                    <button id="closeHelpBtn" class="close-btn">&times;</button>
+                </div>
+                <div class="help-grid">
+                    <div class="help-box">
+                        <h3>🎮 PC Controls</h3>
+                        <p><strong>WASD / Arrow Keys</strong> — Steer & Thrust</p>
+                        <p><strong>SPACE / Left-Click</strong> — Auto Fire</p>
+                        <p><strong>SHIFT / Right-Click</strong> — Quantum Phase Dash</p>
+                        <p><strong>E / B</strong> — EMP Smart Bomb</p>
+                    </div>
+                    <div class="help-box">
+                        <h3>📱 Mobile Touch Controls</h3>
+                        <p><strong>Left Thumb Joystick</strong> — Dynamic Touch Steering & Thrust</p>
+                        <p><strong>🔥 Button</strong> — Hold for Auto Fire</p>
+                        <p><strong>⚡ Button</strong> — Quantum Warp Dash</p>
+                        <p><strong>💣 Button</strong> — EMP Bomb Clear</p>
+                    </div>
+                    <div class="help-box">
+                        <h3>💎 Economy & Crystals</h3>
+                        <p>Destroy Asteroids & UFOs to drop Space Crystals. Collect crystals to permanently unlock <strong>Titan Cruiser</strong> & <strong>Quantum Phantom</strong> or purchase <strong>Hangar Upgrades</strong>!</p>
+                    </div>
+                    <div class="help-box">
+                        <h3>🏆 Game Modes & Bosses</h3>
+                        <p><strong>Classic:</strong> Infinite survival with Mothership Boss every 5 waves.</p>
+                        <p><strong>Time Rush:</strong> Score max points in 3 minutes.</p>
+                        <p><strong>Boss Rush:</strong> Face continuous enraged Alien Motherships.</p>
+                    </div>
+                </div>
+                <button id="gotitBtn" class="btn btn-primary" style="align-self: center; margin-top: 10px;">Got It, Commander! 🚀</button>
             </div>
         </div>
 
@@ -221,17 +325,20 @@
             </div>
         </div>
 
-        <!-- TOUCH VIRTUAL JOYSTICK FOR MOBILE -->
+        <!-- TOUCH VIRTUAL JOYSTICK & CONTROLS FOR MOBILE LANDSCAPE -->
         <div class="mobile-controls-overlay" id="mobileControls">
             <div class="touch-zone left-zone" id="joystickZone">
                 <div class="joystick-base" id="joystickBase">
+                    <div class="joystick-ring"></div>
                     <div class="joystick-stick" id="joystickStick"></div>
                 </div>
             </div>
             <div class="touch-zone right-zone">
-                <button class="touch-action-btn fire-btn" id="touchFireBtn">🔥</button>
-                <button class="touch-action-btn special-btn" id="touchSpecialBtn">⚡</button>
-                <button class="touch-action-btn bomb-btn" id="touchBombBtn">💣</button>
+                <button class="touch-action-btn special-btn" id="touchSpecialBtn" title="Quantum Dash">⚡</button>
+                <button class="touch-action-btn bomb-btn" id="touchBombBtn" title="EMP Bomb">
+                    💣<span class="bomb-badge" id="touchBombCount">2</span>
+                </button>
+                <button class="touch-action-btn fire-btn" id="touchFireBtn" title="Auto Fire">🔥</button>
             </div>
         </div>
     </div>

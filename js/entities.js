@@ -465,9 +465,22 @@ export class Crystal {
         this.pulse = Math.random() * Math.PI * 2; // phase offset
     }
 
-    update() {
+    update(width, height, ship) {
         this.life--;
         this.pulse += 0.08;
+
+        if (ship) {
+            const magnetLvl = ship.magnetLevel || 0;
+            const magnetRadius = 140 + magnetLvl * 50;
+            const dx = ship.x - this.x;
+            const dy = ship.y - this.y;
+            const dist = Math.hypot(dx, dy);
+            if (magnetLvl > 0 && dist < magnetRadius && dist > 1) {
+                const pullSpeed = 4.5 + magnetLvl * 1.6;
+                this.x += (dx / dist) * pullSpeed;
+                this.y += (dy / dist) * pullSpeed;
+            }
+        }
     }
 
     draw(ctx) {

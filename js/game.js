@@ -32,6 +32,7 @@ class Game {
         this.combo = 0;
         this.comboTimer = 0;
         this.highScore = parseInt(localStorage.getItem('asteroidsHiScore') || '0');
+        this.totalCrystals = parseInt(localStorage.getItem('asteroidsTotalCrystals') || '0');
         this.wave = 1;
         this.lives = 3;
         this.crystalCount = 0;
@@ -39,6 +40,7 @@ class Game {
         this.bombs = 2;
         this.timeLeft = TIME_RUSH_LIMIT;
         this.timeTicker = 0;
+        this.initialWaveAsteroidCount = 0;
 
         // Wave announce overlay state
         this.waveAnnounce = { active: false, timer: 0, text: '' };
@@ -59,17 +61,57 @@ class Game {
 
         this.resize();
         window.addEventListener('resize', () => this.resize());
+        window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
         this._bindInput();
         this._bindUI();
+        this._updateShipCardsUI();
+        this._hideBossHealthBar();
         this._loop();
     }
 
     resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-        this.W = this.canvas.width;
-        this.H = this.canvas.height;
-        this.particles.resizeStarfield(this.W, this.H);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        this.dpr = dpr;
+        this.canvas.width = Math.floor(window.innerWidth * dpr);
+        this.canvas.height = Math.floor(window.innerHeight * dpr);
+        this.canvas.style.width = window.innerWidth + 'px';
+        this.canvas.style.height = window.innerHeight + 'px';
+        if (this.ctx.resetTransform) this.ctx.resetTransform();
+        else this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(dpr, dpr);
+        this.W = window.innerWidth;
+        this.H = window.innerHeight;
+        if (this.particles) this.particles.resizeStarfield(this.W, this.H);
+        this._checkOrientation();
+    }
+
+    _checkOrientation() {
+        const prompt = document.getElementById('landscapePrompt');
+        if (!prompt) return;
+        const isPortrait = window.innerHeight > window.innerWidth && window.innerWidth <= 900;
+        prompt.style.display = isPortrait ? 'flex' : 'none';
+    }
+
+    _triggerHaptic(type = 'tap') {
+        if (!navigator.vibrate) return;
+        try {
+            if (type === 'tap') navigator.vibrate(10);
+            else if (type === 'shoot') navigator.vibrate(8);
+            else if (type === 'hit') navigator.vibrate([20, 30, 20]);
+            else if (type === 'bomb') navigator.vibrate([35, 45, 35]);
+            else if (type === 'warp') navigator.vibrate(25);
+        } catch (e) {}
+    }
+
+    _hideBossHealthBar() {
+        const bc = document.getElementById('bossHealthContainer');
+        if (bc) bc.style.display = 'none';
+    }
+
+    bankCrystals(amount) {
+        this.totalCrystals += amount;
+        localStorage.setItem('asteroidsTotalCrystals', String(this.totalCrystals));
+        this._updateHUD();
     }
 
     // ===================== LIFECYCLE =====================
@@ -96,6 +138,7 @@ class Game {
         this.waveAnnounce = { active: false, timer: 0, text: '' };
 
         this.particles.clear();
+        this._hideBossHealthBar();
         this.shop = new Shop();
 
         this.ship = new Ship(this.W / 2, this.H / 2, this.shipType);
@@ -125,6 +168,7 @@ class Game {
         // Bonus crystals for clearing wave
         const bonus = 10 + this.wave * 4;
         this.crystalCount += bonus;
+        this.bankCrystals(bonus);
         this._spawnPopup(this.W / 2, this.H / 2 - 60, `+${bonus} 💎`, '#00f5d4');
         this._updateHUD();
 
@@ -151,6 +195,7 @@ class Game {
 
     _spawnWave(wave) {
         const count = Math.min(4 + wave, 16);
+        this.initialWaveAsteroidCount = count;
         for (let i = 0; i < count; i++) {
             let x, y, attempts = 0;
             do {
@@ -161,6 +206,7 @@ class Game {
             this.asteroids.push(new Asteroid(x, y, 'large', wave));
         }
         this._setWaveBadge(`WAVE ${wave}`);
+        this._updateWaveObjective();
     }
 
     _spawnBoss() {
@@ -175,6 +221,7 @@ class Game {
                 this.boss.phase === 2 ? 'ALIEN MOTHERSHIP — ENRAGED' : 'ALIEN MOTHERSHIP';
             document.getElementById('bossHealthFill').style.width = '100%';
         }
+        this._updateWaveObjective();
     }
 
     loseLife() {
@@ -186,6 +233,7 @@ class Game {
             this.ship.invulnerableTimer = 90;
             this.particles.spawnExplosion(this.ship.x, this.ship.y, '#00f5d4', 18);
             audio.playWarp();
+            this._triggerHaptic('hit');
             this._updateHUD();
             return;
         }
@@ -195,9 +243,11 @@ class Game {
         this.comboTimer = 0;
         this.particles.spawnExplosion(this.ship.x, this.ship.y, '#ff2a85', 50);
         audio.playExplosion('large');
+        this._triggerHaptic('hit');
 
         if (this.lives <= 0) {
             this.ship = null;
+            this._hideBossHealthBar();
             setTimeout(() => this._gameOver(), 800);
         } else {
             this.ship = new Ship(this.W / 2, this.H / 2, this.shipType);
@@ -209,6 +259,7 @@ class Game {
 
     _gameOver() {
         this.state = 'gameover';
+        this._hideBossHealthBar();
         if (this.score > this.highScore) {
             this.highScore = this.score;
             localStorage.setItem('asteroidsHiScore', String(this.highScore));
@@ -253,6 +304,16 @@ class Game {
         const { W, H } = this;
         if (!this.ship) return;
 
+        // Special button cooldown UI state
+        const specBtn = document.getElementById('touchSpecialBtn');
+        if (specBtn) {
+            if (this.shipType === 'quantum' && this.ship.specialCooldown > 0) {
+                specBtn.classList.add('on-cooldown');
+            } else {
+                specBtn.classList.remove('on-cooldown');
+            }
+        }
+
         // ---- Ship Rotation ----
         const rotLeft  = this.keys['ArrowLeft']  || this.keys['KeyA'];
         const rotRight = this.keys['ArrowRight'] || this.keys['KeyD'];
@@ -281,12 +342,12 @@ class Game {
         // ---- Touch joystick steering + thrust ----
         if (this.touchJoystick.active) {
             const mag = Math.hypot(this.touchJoystick.dx, this.touchJoystick.dy);
-            if (mag > 12) {
+            if (mag > 8) {
                 const jAngle = Math.atan2(this.touchJoystick.dy, this.touchJoystick.dx);
-                this.ship.steerToward(jAngle, 0.12);
+                this.ship.steerToward(jAngle, 0.15);
                 this.ship.thrust();
                 this.ship.isThrusting = true;
-                this.particles.spawnThrusterTrail(this.ship.x, this.ship.y, this.ship.angle, '#ff6030');
+                this.particles.spawnThrusterTrail(this.ship.x, this.ship.y, this.ship.angle, '#38bdf8');
             }
         }
 
@@ -348,7 +409,6 @@ class Game {
                     a.hp -= b.power;
                     if (a.hp <= 0) {
                         this._destroyAsteroid(i, a);
-                        break;
                     } else {
                         this.particles.spawnExplosion(a.x, a.y, '#38bdf8', 6);
                     }
@@ -359,58 +419,44 @@ class Game {
 
         // ---- Update UFOs ----
         for (let i = this.ufos.length - 1; i >= 0; i--) {
-            const ufo = this.ufos[i];
-            ufo.update(W, H);
+            const u = this.ufos[i];
+            u.update(W, H, this.ship);
 
-            // Exit bounds
-            if (ufo.x < -60 || ufo.x > W + 60) {
-                this.ufos.splice(i, 1); continue;
+            if (u.canShoot()) {
+                const aim = Math.atan2(this.ship.y - u.y, this.ship.x - u.x);
+                this.enemies.push(new Bullet(u.x, u.y, aim + (Math.random() - 0.5) * 0.2, 1, true));
             }
 
-            // UFO shoots toward player
-            if (ufo.shootTimer >= 90 && this.ship) {
-                ufo.shootTimer = 0;
-                const angle = Math.atan2(this.ship.y - ufo.y, this.ship.x - ufo.x);
-                // Add slight inaccuracy so it's not pixel-perfect
-                const spread = (Math.random() - 0.5) * 0.25;
-                this.enemies.push(new Bullet(ufo.x, ufo.y, angle + spread, 1, true));
+            if (this.ship && this._circlesCollide(u, this.ship)) {
+                this.loseLife();
             }
 
             // Bullets hit UFO
-            let ufoDestroyed = false;
             for (let j = this.bullets.length - 1; j >= 0; j--) {
                 const b = this.bullets[j];
-                if (this._circlesCollide(b, ufo)) {
+                if (this._circlesCollide(b, u)) {
                     this.bullets.splice(j, 1);
-                    ufo.hp -= b.power;
+                    u.hp -= b.power;
                     this.particles.spawnExplosion(b.x, b.y, '#ff2a85', 8);
-                    if (ufo.hp <= 0) {
-                        const earned = ufo.points * (1 + this.combo * 0.1 | 0);
-                        this.score += earned;
-                        this.crystalCount += 25;
-                        this._incrementCombo(ufo.x, ufo.y, earned);
-                        this.particles.spawnExplosion(ufo.x, ufo.y, '#ff2a85', 35);
-                        audio.playExplosion('large');
+                    if (u.hp <= 0) {
                         this.ufos.splice(i, 1);
+                        this.particles.spawnExplosion(u.x, u.y, '#ff2a85', 30);
+                        audio.playExplosion('large');
+                        this._incrementCombo(u.x, u.y, u.points);
+                        this.score += u.points;
                         this._updateHUD();
-                        ufoDestroyed = true;
+                        break;
                     }
-                    break;
                 }
             }
-            if (ufoDestroyed) continue;
-
-            if (this.ship && this._circlesCollide(ufo, this.ship)) this.loseLife();
         }
 
         // ---- Update Boss ----
         if (this.boss) {
-            this.boss.update(W, H);
+            this.boss.update(W, H, this.ship);
 
-            const shootInterval = this.boss.phase === 2 ? 55 : 80;
-            if (this.boss.shootTimer >= shootInterval) {
-                this.boss.shootTimer = 0;
-                this._bossFire();
+            if (this.boss.canShoot()) {
+                this._bossShoot(this.boss);
             }
 
             // Player bullets hit boss
@@ -421,42 +467,39 @@ class Game {
                     this.boss.hp -= b.power;
                     this.particles.spawnExplosion(b.x, b.y, '#ef4444', 8);
 
-                    const pct = Math.max(0, (this.boss.hp / this.boss.maxHp) * 100);
                     const fill = document.getElementById('bossHealthFill');
-                    if (fill) fill.style.width = pct + '%';
-
-                    // Update boss name color for phase 2
-                    if (this.boss.phase === 2) {
-                        document.getElementById('bossName').textContent = 'ALIEN MOTHERSHIP — ENRAGED';
+                    if (fill) {
+                        const pct = Math.max(0, (this.boss.hp / this.boss.maxHp) * 100);
+                        fill.style.width = `${pct}%`;
                     }
 
                     if (this.boss.hp <= 0) {
-                        this.score += this.boss.points;
-                        this.crystalCount += 100;
-                        this._spawnPopup(this.boss.x, this.boss.y - 40, '💀 BOSS DESTROYED!', '#ffd700');
-                        this.particles.spawnExplosion(this.boss.x, this.boss.y, '#ef4444', 100);
+                        this.particles.spawnExplosion(this.boss.x, this.boss.y, '#ef4444', 80);
                         audio.playExplosion('boss');
+                        this._incrementCombo(this.boss.x, this.boss.y, 5000);
+                        this.score += 5000;
                         this.boss = null;
-                        document.getElementById('bossHealthContainer').style.display = 'none';
+                        this._hideBossHealthBar();
                         this._updateHUD();
-                        setTimeout(() => this._nextWave(), 2500);
+                        setTimeout(() => this._nextWave(), 1500);
                     }
                     break;
                 }
             }
-
-            if (this.boss && this.ship && this._circlesCollide(this.boss, this.ship)) this.loseLife();
         }
 
         // ---- Update crystals ----
         for (let i = this.crystals.length - 1; i >= 0; i--) {
             const c = this.crystals[i];
-            c.update();
+            c.update(W, H, this.ship);
             if (c.life <= 0) { this.crystals.splice(i, 1); continue; }
-            if (this.ship && this._dist(c.x, c.y, this.ship.x, this.ship.y) < c.radius + this.ship.radius + 18) {
+            if (this.ship && this._circlesCollide(c, this.ship)) {
                 this.crystalCount += c.value;
+                this.bankCrystals(c.value);
                 this.crystals.splice(i, 1);
                 audio.playPowerUp();
+                this._triggerHaptic('tap');
+                this._spawnPopup(c.x, c.y, `+${c.value} 💎`, '#38bdf8');
                 this._updateHUD();
             }
         }
@@ -469,35 +512,32 @@ class Game {
             if (p.life <= 0) this.popups.splice(i, 1);
         }
 
-        // ---- Check wave clear (no asteroids, no boss, no UFOs) ----
-        if (this.asteroids.length === 0 && !this.boss && this.ufos.length === 0 && this.state === 'playing') {
-            // Debounce: only fire once
-            if (!this._waveClearPending) {
-                this._waveClearPending = true;
-                setTimeout(() => {
-                    this._waveClearPending = false;
-                    if (this.asteroids.length === 0 && !this.boss && this.state === 'playing') {
-                        this._nextWave();
-                    }
-                }, 1200);
-            }
-        } else {
-            this._waveClearPending = false;
+        this._updateWaveObjective();
+
+        // ---- Check wave clear ----
+        if (this.asteroids.length === 0 && this.ufos.length === 0 && !this.boss && !this.waveAnnounce.active) {
+            this._nextWave();
         }
     }
 
-    _bossFire() {
-        if (!this.boss || !this.ship) return;
-        const b = this.boss;
-
-        // Phase 1: radial burst
-        const shots = b.phase === 2 ? 10 : 6;
-        for (let s = 0; s < shots; s++) {
-            const a = (s / shots) * Math.PI * 2 + b.angle;
-            this.enemies.push(new Bullet(b.x, b.y, a, 1, true));
+    _updateWaveObjective() {
+        const obj = document.getElementById('waveObjective');
+        const fill = document.getElementById('waveProgressFill');
+        if (this.boss) {
+            if (obj) obj.textContent = '⚠️ BOSS BATTLE';
+            if (fill) fill.style.width = '100%';
+            return;
         }
+        const count = this.asteroids.length + this.ufos.length;
+        if (obj) obj.textContent = `ASTEROIDS: ${count} REMAINING`;
+        const initial = Math.max(1, this.initialWaveAsteroidCount || 4);
+        const destroyed = Math.max(0, initial - count);
+        const pct = Math.max(0, Math.min(100, Math.floor((destroyed / initial) * 100)));
+        if (fill) fill.style.width = `${pct}%`;
+    }
 
-        // Always fire aimed shot at player
+    _bossShoot(b) {
+        if (!this.ship) return;
         const aimAngle = Math.atan2(this.ship.y - b.y, this.ship.x - b.x);
         this.enemies.push(new Bullet(b.x, b.y, aimAngle, 1, true));
 
@@ -537,6 +577,7 @@ class Game {
 
         this.ship.fireCooldown = this.ship.fireRateDelay;
         audio.playLaser();
+        this._triggerHaptic('shoot');
     }
 
     // ===================== DESTROY =====================
@@ -584,6 +625,7 @@ class Game {
     useBomb() {
         if (this.bombs <= 0 || this.state !== 'playing') return;
         this.bombs--;
+        this._triggerHaptic('bomb');
 
         let bonusScore = 0;
         this.asteroids.forEach(a => {
@@ -629,6 +671,11 @@ class Game {
             this.enemies.forEach(b => b.draw(ctx));
             if (this.ship) this.ship.draw(ctx);
 
+            // Tactical aim vector line for touch joystick / mouse aim
+            if (this.ship && (this.touchJoystick.active || this.aimWithMouse)) {
+                this._drawAimVector(ctx);
+            }
+
             // Thruster flame (drawn after ship for layering)
             if (this.ship && this.ship.isThrusting) {
                 this._drawThrusterFlame(ctx);
@@ -655,6 +702,33 @@ class Game {
         if (this.waveAnnounce.active) {
             this._drawWaveAnnounce(ctx, W, H);
         }
+    }
+
+    _drawAimVector(ctx) {
+        if (!this.ship) return;
+        const s = this.ship;
+        const startX = s.x + Math.cos(s.angle) * (s.radius + 6);
+        const startY = s.y + Math.sin(s.angle) * (s.radius + 6);
+        const aimLength = 130;
+        const endX = s.x + Math.cos(s.angle) * aimLength;
+        const endY = s.y + Math.sin(s.angle) * aimLength;
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(endX, endY, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
     }
 
     _drawThrusterFlame(ctx) {
@@ -738,15 +812,15 @@ class Game {
         const totalDur = 120;
         let alpha;
         if (t < 20) alpha = t / 20;
-        else if (t > totalDur - 30) alpha = (totalDur - t) / 30;
+        else if (t > totalDur - 20) alpha = (totalDur - t) / 20;
         else alpha = 1;
 
         ctx.save();
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
 
         // Semi-transparent backdrop band
-        const bh = 120;
-        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        const bh = 110;
+        ctx.fillStyle = 'rgba(5, 7, 14, 0.75)';
         ctx.fillRect(0, H / 2 - bh / 2, W, bh);
 
         // Wave text
@@ -776,13 +850,19 @@ class Game {
         requestAnimationFrame(() => this._loop());
     }
 
-    // ===================== HUD =====================
+    // ===================== HUD & CARDS =====================
 
     _updateHUD() {
         const fmt = n => n.toLocaleString();
         document.getElementById('scoreDisplay').textContent = fmt(this.score);
         document.getElementById('highScoreDisplay').textContent = fmt(this.highScore);
         document.getElementById('crystalDisplay').textContent = `💎 ${this.crystalCount}`;
+
+        const vaultDisplay = document.getElementById('vaultCrystalDisplay');
+        if (vaultDisplay) vaultDisplay.textContent = `💎 ${fmt(this.totalCrystals)}`;
+
+        const bombBadge = document.getElementById('touchBombCount');
+        if (bombBadge) bombBadge.textContent = this.bombs;
 
         const lives = document.getElementById('livesContainer');
         if (lives) {
@@ -797,6 +877,33 @@ class Game {
         }
     }
 
+    _updateShipCardsUI() {
+        this._updateHUD();
+
+        ['viper', 'titan', 'quantum'].forEach(st => {
+            const cap = st.charAt(0).toUpperCase() + st.slice(1);
+            const card = document.getElementById(`shipCard${cap}`);
+            const overlay = document.getElementById(`lockOverlay${cap}`);
+            const isUnlocked = this.shop.isShipUnlocked(st);
+
+            if (card) {
+                if (isUnlocked) {
+                    card.classList.remove('locked');
+                    if (overlay) overlay.style.display = 'none';
+                } else {
+                    card.classList.add('locked');
+                    if (overlay) overlay.style.display = 'flex';
+                }
+
+                if (st === this.shipType && isUnlocked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            }
+        });
+    }
+
     _setWaveBadge(text) {
         const el = document.getElementById('waveBadge');
         if (el) el.textContent = text;
@@ -805,6 +912,7 @@ class Game {
     // ===================== MODALS =====================
 
     _showModal(type) {
+        this._hideBossHealthBar();
         const modal = document.getElementById('statusModal');
         document.getElementById('modalIcon').textContent    = type === 'gameover' ? '💥' : '⏸️';
         document.getElementById('modalTitle').textContent   = type === 'gameover' ? 'GAME OVER' : 'PAUSED';
@@ -827,6 +935,14 @@ class Game {
     // ===================== INPUT BINDING =====================
 
     _bindInput() {
+        const unlockAudio = () => {
+            audio.init();
+            window.removeEventListener('touchstart', unlockAudio);
+            window.removeEventListener('mousedown', unlockAudio);
+        };
+        window.addEventListener('touchstart', unlockAudio, { passive: true });
+        window.addEventListener('mousedown', unlockAudio, { passive: true });
+
         window.addEventListener('keydown', e => {
             this.keys[e.code] = true;
 
@@ -899,6 +1015,7 @@ class Game {
         // Brief phase-out flash
         this.ship.warpPhase = true;
         this.particles.spawnExplosion(this.ship.x, this.ship.y, '#ff2a85', 30);
+        this._triggerHaptic('warp');
         setTimeout(() => {
             if (!this.ship) return;
             let nx, ny, attempts = 0;
@@ -918,9 +1035,23 @@ class Game {
     }
 
     _bindUI() {
+        // Fullscreen lock
+        document.getElementById('fullscreenLockBtn')?.addEventListener('click', async () => {
+            this._triggerHaptic('tap');
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                }
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('landscape');
+                }
+            } catch (e) {}
+        });
+
         // Mode tabs
         document.querySelectorAll('.mode-tab').forEach(btn => {
             btn.addEventListener('click', () => {
+                this._triggerHaptic('tap');
                 document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.mode = btn.dataset.mode;
@@ -930,14 +1061,52 @@ class Game {
         // Ship cards
         document.querySelectorAll('.ship-card').forEach(card => {
             card.addEventListener('click', () => {
-                document.querySelectorAll('.ship-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                this.shipType = card.dataset.ship;
+                const st = card.dataset.ship;
+                if (this.shop.isShipUnlocked(st)) {
+                    this._triggerHaptic('tap');
+                    this.shipType = st;
+                    this._updateShipCardsUI();
+                }
             });
         });
 
+        // Ship Unlock Buttons
+        ['titan', 'quantum'].forEach(st => {
+            const cap = st.charAt(0).toUpperCase() + st.slice(1);
+            document.getElementById(`unlock${cap}Btn`)?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this._triggerHaptic('tap');
+                const result = this.shop.unlockShip(st, this.totalCrystals);
+                if (result.success) {
+                    this.totalCrystals = result.newCrystals;
+                    localStorage.setItem('asteroidsTotalCrystals', String(this.totalCrystals));
+                    this.shipType = st;
+                    this._updateShipCardsUI();
+                    audio.playPowerUp();
+                    this._spawnPopup(this.W / 2, this.H / 2 - 40, `🔓 UNLOCKED ${st.toUpperCase()}!`, '#00f5d4');
+                } else {
+                    this._spawnPopup(this.W / 2, this.H / 2 - 40, '❌ NEED MORE CRYSTALS!', '#ef4444');
+                }
+            });
+        });
+
+        // Help Modal
+        const toggleHelp = (show) => {
+            this._triggerHaptic('tap');
+            const modal = document.getElementById('helpModal');
+            if (modal) {
+                modal.style.display = show ? 'flex' : 'none';
+                if (show) modal.classList.add('active');
+                else modal.classList.remove('active');
+            }
+        };
+        document.getElementById('helpBtn')?.addEventListener('click', () => toggleHelp(true));
+        document.getElementById('closeHelpBtn')?.addEventListener('click', () => toggleHelp(false));
+        document.getElementById('gotitBtn')?.addEventListener('click', () => toggleHelp(false));
+
         // Launch
         document.getElementById('startGameBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('startScreen').classList.remove('active');
             this.startGame();
@@ -945,19 +1114,27 @@ class Game {
 
         // Pause button
         document.getElementById('pauseBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
             if (this.state === 'playing') this.pause();
             else if (this.state === 'paused') this.resume();
         });
 
         // Resume / Restart / Hangar
-        document.getElementById('resumeBtn').addEventListener('click', () => this.resume());
+        document.getElementById('resumeBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
+            this.resume();
+        });
         document.getElementById('restartBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
+            this._hideBossHealthBar();
             const m = document.getElementById('statusModal');
             m.style.display = 'none';
             m.classList.remove('active');
             this.startGame();
         });
         document.getElementById('hangarBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
+            this._hideBossHealthBar();
             const m = document.getElementById('statusModal');
             m.style.display = 'none';
             m.classList.remove('active');
@@ -966,58 +1143,90 @@ class Game {
             s.classList.add('active');
             this.state = 'menu';
             this.ship = null;
+            this._updateShipCardsUI();
         });
 
         // Shop
         document.getElementById('shopBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
             if (this.state === 'playing') this.pause();
             document.getElementById('shopDrawer').classList.add('active');
-            this.shop.updateUI(this.crystalCount);
+            this.shop.updateUI(this.totalCrystals);
         });
         document.getElementById('closeShopBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
             document.getElementById('shopDrawer').classList.remove('active');
             if (this.state === 'paused') this.resume();
         });
 
         // Shop buy buttons
-        ['laser', 'firerate', 'shield', 'bomb'].forEach(type => {
+        ['laser', 'firerate', 'shield', 'bomb', 'magnet', 'life'].forEach(type => {
             const capType = type.charAt(0).toUpperCase() + type.slice(1);
             document.getElementById(`buy${capType}Btn`)?.addEventListener('click', () => {
-                const result = this.shop.purchase(type, this.crystalCount);
+                this._triggerHaptic('tap');
+                const result = this.shop.purchase(type, this.totalCrystals, this);
                 if (result.success) {
-                    this.crystalCount = result.newCrystals;
+                    this.totalCrystals = result.newCrystals;
+                    localStorage.setItem('asteroidsTotalCrystals', String(this.totalCrystals));
                     if (this.ship) this.shop.applyToShip(this.ship);
                 }
-                this.shop.updateUI(this.crystalCount);
+                this.shop.updateUI(this.totalCrystals);
                 this._updateHUD();
             });
         });
 
         // Sound
         document.getElementById('soundBtn').addEventListener('click', () => {
+            this._triggerHaptic('tap');
             const on = audio.toggleSound();
             document.getElementById('soundIcon').textContent = on ? '🔊' : '🔇';
         });
 
         // Touch action buttons
-        document.getElementById('touchFireBtn')?.addEventListener('touchstart', e => {
-            e.preventDefault();
-            this.touchFireHeld = true;
-        });
-        document.getElementById('touchFireBtn')?.addEventListener('touchend', e => {
-            e.preventDefault();
-            this.touchFireHeld = false;
-        });
+        const fireBtn = document.getElementById('touchFireBtn');
+        if (fireBtn) {
+            fireBtn.addEventListener('touchstart', e => {
+                e.preventDefault();
+                this.touchFireHeld = true;
+                fireBtn.classList.add('touch-active');
+                this._triggerHaptic('tap');
+            }, { passive: false });
+            fireBtn.addEventListener('touchend', e => {
+                e.preventDefault();
+                this.touchFireHeld = false;
+                fireBtn.classList.remove('touch-active');
+            }, { passive: false });
+        }
 
-        document.getElementById('touchSpecialBtn')?.addEventListener('touchstart', e => {
-            e.preventDefault();
-            if (this.shipType === 'quantum' && this.ship?.specialCooldown <= 0) this._quantumWarp();
-        });
+        const specBtn = document.getElementById('touchSpecialBtn');
+        if (specBtn) {
+            specBtn.addEventListener('touchstart', e => {
+                e.preventDefault();
+                specBtn.classList.add('touch-active');
+                if (this.shipType === 'quantum' && this.ship?.specialCooldown <= 0) {
+                    this._quantumWarp();
+                } else {
+                    this._triggerHaptic('tap');
+                }
+            }, { passive: false });
+            specBtn.addEventListener('touchend', e => {
+                e.preventDefault();
+                specBtn.classList.remove('touch-active');
+            }, { passive: false });
+        }
 
-        document.getElementById('touchBombBtn')?.addEventListener('touchstart', e => {
-            e.preventDefault();
-            this.useBomb();
-        });
+        const bombBtn = document.getElementById('touchBombBtn');
+        if (bombBtn) {
+            bombBtn.addEventListener('touchstart', e => {
+                e.preventDefault();
+                bombBtn.classList.add('touch-active');
+                this.useBomb();
+            }, { passive: false });
+            bombBtn.addEventListener('touchend', e => {
+                e.preventDefault();
+                bombBtn.classList.remove('touch-active');
+            }, { passive: false });
+        }
     }
 
     _bindJoystick() {
@@ -1027,20 +1236,45 @@ class Game {
         if (!zone || !stick || !base) return;
 
         let baseX = 0, baseY = 0;
-        const maxR = 42;
+        const maxR = 46;
 
         zone.addEventListener('touchstart', e => {
             e.preventDefault();
-            const touch = e.touches[0];
+            const touch = e.changedTouches[0];
+            this.touchJoystick.touchId = touch.identifier;
+
+            const zoneRect = zone.getBoundingClientRect();
+            let posX = touch.clientX - zoneRect.left;
+            let posY = touch.clientY - zoneRect.top;
+
+            posX = Math.max(55, Math.min(zoneRect.width - 55, posX));
+            posY = Math.max(55, Math.min(zoneRect.height - 55, posY));
+
+            base.style.left = `${posX - 55}px`;
+            base.style.top = `${posY - 55}px`;
+            base.classList.add('active');
+
             const r = base.getBoundingClientRect();
             baseX = r.left + r.width / 2;
             baseY = r.top + r.height / 2;
+
             this.touchJoystick.active = true;
+            this.touchJoystick.dx = 0;
+            this.touchJoystick.dy = 0;
+            this._triggerHaptic('tap');
         }, { passive: false });
 
         zone.addEventListener('touchmove', e => {
             e.preventDefault();
-            const touch = e.touches[0];
+            if (!this.touchJoystick.active) return;
+            let touch = null;
+            for (let i = 0; i < e.touches.length; i++) {
+                if (e.touches[i].identifier === this.touchJoystick.touchId) {
+                    touch = e.touches[i];
+                    break;
+                }
+            }
+            if (!touch) touch = e.touches[0];
             let dx = touch.clientX - baseX;
             let dy = touch.clientY - baseY;
             const dist = Math.hypot(dx, dy);
@@ -1053,11 +1287,24 @@ class Game {
             this.touchJoystick.dy = dy;
         }, { passive: false });
 
-        const endJoy = () => {
-            stick.style.transform = 'translate(0,0)';
-            this.touchJoystick.dx = 0;
-            this.touchJoystick.dy = 0;
-            this.touchJoystick.active = false;
+        const endJoy = (e) => {
+            let relevant = false;
+            if (e.changedTouches) {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === this.touchJoystick.touchId) {
+                        relevant = true;
+                        break;
+                    }
+                }
+            }
+            if (relevant || e.touches.length === 0) {
+                stick.style.transform = 'translate(-50%, -50%)';
+                base.classList.remove('active');
+                this.touchJoystick.dx = 0;
+                this.touchJoystick.dy = 0;
+                this.touchJoystick.active = false;
+                this.touchJoystick.touchId = null;
+            }
         };
         zone.addEventListener('touchend', endJoy);
         zone.addEventListener('touchcancel', endJoy);
