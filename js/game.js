@@ -1146,17 +1146,25 @@ class Game {
             this._updateShipCardsUI();
         });
 
-        // Shop
-        document.getElementById('shopBtn').addEventListener('click', () => {
+        // Shop Triggers (HUD, Main Menu, Vault Chip, Status Modal)
+        const openShop = () => {
             this._triggerHaptic('tap');
             if (this.state === 'playing') this.pause();
             document.getElementById('shopDrawer').classList.add('active');
             this.shop.updateUI(this.totalCrystals);
-        });
-        document.getElementById('closeShopBtn').addEventListener('click', () => {
+        };
+
+        document.getElementById('shopBtn')?.addEventListener('click', openShop);
+        document.getElementById('startShopBtn')?.addEventListener('click', openShop);
+        document.getElementById('openShopChipBtn')?.addEventListener('click', openShop);
+        document.getElementById('modalShopBtn')?.addEventListener('click', openShop);
+
+        document.getElementById('closeShopBtn')?.addEventListener('click', () => {
             this._triggerHaptic('tap');
             document.getElementById('shopDrawer').classList.remove('active');
-            if (this.state === 'paused') this.resume();
+            if (this.state === 'paused' && document.getElementById('statusModal').style.display === 'none') {
+                this.resume();
+            }
         });
 
         // Shop buy buttons

@@ -92,8 +92,9 @@
                     <h1 class="logo-title">ASTEROIDS DELUXE</h1>
                 </div>
 
-                <div class="vault-balance">
-                    Banked Crystal Vault: <span class="cyan-text" id="vaultCrystalDisplay">💎 0</span>
+                <div class="vault-balance" id="vaultBalanceCard">
+                    <span>Banked Crystal Vault: <strong class="cyan-text" id="vaultCrystalDisplay">💎 0</strong></span>
+                    <button id="openShopChipBtn" class="vault-shop-chip">🛒 OPEN SHOP</button>
                 </div>
 
                 <div class="mode-selector">
@@ -158,6 +159,9 @@
                 <div class="start-actions">
                     <button id="startGameBtn" class="btn btn-primary btn-launch">
                         🚀 LAUNCH MISSION
+                    </button>
+                    <button id="startShopBtn" class="btn btn-secondary btn-shop-menu">
+                        🛒 UPGRADE SHOP
                     </button>
                     <button id="helpBtn" class="btn btn-secondary btn-help">
                         ❓ HOW TO PLAY
@@ -320,6 +324,7 @@
                 <div class="modal-button-group">
                     <button id="resumeBtn" class="btn btn-secondary" style="display: none;">▶ Resume</button>
                     <button id="restartBtn" class="btn btn-primary">🔄 Play Again</button>
+                    <button id="modalShopBtn" class="btn btn-secondary">🛒 Upgrade Shop</button>
                     <button id="hangarBtn" class="btn btn-secondary">🚀 Hangar</button>
                 </div>
             </div>
