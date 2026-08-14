@@ -30,6 +30,16 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+button {
+    background: none;
+    border: none;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -682,41 +692,324 @@ body, html {
 
 .section-title {
     font-family: var(--font-heading);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
     letter-spacing: 2px;
     color: var(--neon-cyan);
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+/* MAIN MENU CARD STYLES */
+.main-menu-card {
+    max-width: 520px;
+    align-items: center;
     text-align: center;
+    gap: 22px;
 }
 
-.mode-selector {
+.main-menu-stats-badge {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
     background: rgba(0, 0, 0, 0.4);
-    padding: 4px;
-    border-radius: 14px;
     border: 1px solid var(--surface-border);
+    padding: 10px 20px;
+    border-radius: 14px;
+    width: 100%;
 }
 
-.mode-tab {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 10px;
-    background: transparent;
+.mini-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.mini-stat .lbl {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
     color: #94a3b8;
     font-family: var(--font-heading);
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: var(--transition);
 }
 
-.mode-tab.active {
-    background: var(--surface-glass);
+.mini-stat .val {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.main-menu-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.btn-main-play {
+    padding: 16px;
+    font-size: 16px;
+    justify-content: center;
+    letter-spacing: 2px;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+}
+
+.btn-main-shop, .btn-main-help {
+    padding: 13px;
+    font-size: 13px;
+    justify-content: center;
+}
+
+/* HANGAR CARD & MISSION SELECTOR STYLES */
+.hangar-card {
+    max-width: 820px;
+    padding: 24px 28px;
+    gap: 18px;
+}
+
+.hangar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--surface-border);
+    width: 100%;
+}
+
+.btn-back {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 10px;
+}
+
+.hangar-title-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hangar-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
     color: #ffffff;
+}
+
+.hangar-vault {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--surface-border);
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.hangar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+/* MODE CARDS GRID */
+.mode-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.mode-card {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+}
+
+.mode-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+}
+
+.mode-card.active {
+    background: rgba(56, 189, 248, 0.12);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+}
+
+.mode-icon {
+    font-size: 26px;
+}
+
+.mode-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mode-name {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.mode-desc {
+    font-size: 10.5px;
+    color: #94a3b8;
+    line-height: 1.35;
+}
+
+.mode-badge {
+    align-self: flex-start;
+    font-family: var(--font-heading);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(56, 189, 248, 0.2);
+    color: var(--neon-cyan);
     border: 1px solid var(--neon-cyan);
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+}
+
+.gold-badge {
+    background: rgba(255, 215, 0, 0.2);
+    color: var(--neon-gold);
+    border-color: var(--neon-gold);
+}
+
+.danger-badge {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--neon-danger);
+    border-color: var(--neon-danger);
+}
+
+/* LIVE STARFIGHTER PREVIEW DISPLAY */
+.ship-hangar-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 12px 16px;
+}
+
+.ship-canvas-box {
+    position: relative;
+    width: 140px;
+    height: 100px;
+    background: radial-gradient(circle at center, rgba(56, 189, 248, 0.15), rgba(5, 7, 14, 0.8));
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#hangarShipCanvas {
+    width: 140px;
+    height: 100px;
+}
+
+.preview-tag {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-size: 8px;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    letter-spacing: 1px;
+    color: var(--neon-cyan);
+    opacity: 0.8;
+}
+
+.ship-details-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ship-active-name {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+.ship-active-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.ship-stat-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-size: 9px;
+    font-weight: 800;
+    color: #cbd5e1;
+}
+
+.stat-bar-row span {
+    width: 70px;
+}
+
+.bar-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 4px;
+    box-shadow: 0 0 8px var(--neon-cyan);
+    transition: width 0.3s ease;
+}
+
+.hangar-actions {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.hangar-actions .btn-launch {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    justify-content: center;
+    letter-spacing: 2px;
 }
 
 .ship-select-grid {
@@ -1124,3 +1417,299 @@ body, html {
         grid-template-columns: 1fr;
     }
 }
+
+/* =======================================================
+   DEDICATED SEPARATE UI SYSTEM (MOBILE vs PC)
+   ======================================================= */
+
+/* PC UI DISPLAY DEFAULTS */
+body.is-pc .mobile-ship-tabs,
+body.is-pc .mobile-stat-pill {
+    display: none !important;
+}
+
+body.is-pc .stat-box {
+    display: flex !important;
+}
+
+body.is-pc .ship-card {
+    display: flex !important;
+}
+
+/* MOBILE UI DEDICATED OVERRIDES */
+body.is-mobile .mobile-stat-pill {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    background: rgba(5, 7, 14, 0.85);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    padding: 5px 12px;
+    font-family: var(--font-heading);
+    font-size: 11px;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+}
+
+body.is-mobile .mob-stat-item {
+    font-weight: 800;
+}
+
+body.is-mobile .mob-stat-sep {
+    color: #475569;
+}
+
+body.is-mobile .stat-box {
+    display: none !important; /* Hide bulky stat boxes on mobile HUD */
+}
+
+body.is-mobile #shopBtn {
+    display: none !important; /* Hide shop button from mobile top HUD */
+}
+
+body.is-mobile .hud-top {
+    padding: 6px 10px;
+    align-items: center;
+}
+
+body.is-mobile .hud-group {
+    gap: 8px;
+}
+
+body.is-mobile .center-hud {
+    flex-direction: column;
+    gap: 2px;
+}
+
+body.is-mobile .wave-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 1px;
+}
+
+body.is-mobile .wave-objective-box {
+    align-items: center;
+}
+
+body.is-mobile .wave-objective {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+}
+
+body.is-mobile .wave-progress-bar {
+    width: 70px;
+    height: 3px;
+}
+
+body.is-mobile .lives-container {
+    gap: 3px;
+}
+
+body.is-mobile .life-icon {
+    font-size: 14px;
+}
+
+body.is-mobile .icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+/* MOBILE START SCREEN OPTIMIZATION */
+body.is-mobile #startScreen .screen-card {
+    padding: 14px 16px;
+    gap: 8px;
+    max-width: 580px;
+}
+
+body.is-mobile .game-logo .logo-badge {
+    font-size: 8px;
+    letter-spacing: 2px;
+}
+
+body.is-mobile .game-logo .logo-title {
+    font-size: 20px;
+}
+
+body.is-mobile .vault-balance {
+    padding: 4px 10px;
+    font-size: 10px;
+}
+
+body.is-mobile .mode-selector {
+    padding: 2px;
+    gap: 4px;
+}
+
+body.is-mobile .mode-tab {
+    padding: 4px 8px;
+    font-size: 9.5px;
+}
+
+body.is-mobile .section-title {
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* MOBILE SHIP SELECTOR TAB CONTROL */
+body.is-mobile .mobile-ship-tabs {
+    display: flex !important;
+    gap: 6px;
+    width: 100%;
+}
+
+body.is-mobile .ship-tab {
+    flex: 1;
+    padding: 6px 4px;
+    font-family: var(--font-heading);
+    font-size: 10.5px;
+    font-weight: 800;
+    border-radius: 10px;
+    border: 1px solid var(--surface-border);
+    background: rgba(0, 0, 0, 0.4);
+    color: #94a3b8;
+    cursor: pointer;
+    text-align: center;
+    transition: var(--transition);
+}
+
+body.is-mobile .ship-tab.active {
+    background: var(--gradient-primary);
+    border-color: var(--neon-cyan);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+body.is-mobile .tab-lock-icon {
+    font-size: 10px;
+    margin-left: 2px;
+}
+
+/* In Mobile, hide inactive ship cards and show only the selected active card */
+body.is-mobile .ship-card {
+    display: none !important;
+}
+
+body.is-mobile .ship-card.mobile-active {
+    display: flex !important;
+    width: 100%;
+    padding: 8px 12px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+body.is-mobile .ship-card.mobile-active .ship-preview {
+    font-size: 28px;
+    margin: 0;
+}
+
+body.is-mobile .ship-card.mobile-active .ship-name {
+    font-size: 13px;
+}
+
+body.is-mobile .ship-card.mobile-active .ship-desc {
+    font-size: 9px;
+    margin-bottom: 2px;
+}
+
+body.is-mobile .ship-card.mobile-active .ship-stats {
+    display: flex;
+    gap: 4px;
+}
+
+body.is-mobile .controls-guide {
+    font-size: 8.5px;
+    padding: 4px;
+}
+
+body.is-mobile .start-actions {
+    gap: 8px;
+}
+
+body.is-mobile .btn-launch {
+    flex: 2;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+body.is-mobile .btn-shop-menu,
+body.is-mobile .btn-help {
+    flex: 1;
+    padding: 8px 8px;
+    font-size: 10.5px;
+}
+
+/* MOBILE HANGAR OPTIMIZATIONS */
+body.is-mobile #hangarScreen .hangar-card {
+    padding: 14px 16px;
+    gap: 12px;
+    max-width: 580px;
+}
+
+body.is-mobile .hangar-title {
+    font-size: 15px;
+}
+
+body.is-mobile .mode-cards-grid {
+    gap: 8px;
+}
+
+body.is-mobile .mode-card {
+    padding: 8px 10px;
+    gap: 4px;
+}
+
+body.is-mobile .mode-icon {
+    font-size: 20px;
+}
+
+body.is-mobile .mode-name {
+    font-size: 11px;
+}
+
+body.is-mobile .mode-desc {
+    font-size: 8.5px;
+}
+
+body.is-mobile .mode-badge {
+    font-size: 7.5px;
+    padding: 1px 5px;
+}
+
+body.is-mobile .ship-hangar-display {
+    padding: 8px 10px;
+    gap: 10px;
+}
+
+body.is-mobile .ship-canvas-box {
+    width: 100px;
+    height: 75px;
+}
+
+body.is-mobile #hangarShipCanvas {
+    width: 100px;
+    height: 75px;
+}
+
+body.is-mobile .ship-active-name {
+    font-size: 13px;
+}
+
+body.is-mobile .ship-active-desc {
+    font-size: 9px;
+}
+
+body.is-mobile .stat-bar-row {
+    font-size: 8px;
+}
+
+body.is-mobile .stat-bar-row span {
+    width: 55px;
+}
+

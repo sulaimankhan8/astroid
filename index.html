@@ -49,6 +49,13 @@
                     <span class="stat-label">CRYSTALS</span>
                     <span class="stat-value cyan-text" id="crystalDisplay">💎 0</span>
                 </div>
+
+                <!-- COMPACT STAT PILL FOR MOBILE HUD -->
+                <div class="mobile-stat-pill" id="mobileStatPill">
+                    <span class="mob-stat-item">PTS: <strong id="mobileScore">0</strong></span>
+                    <span class="mob-stat-sep">|</span>
+                    <span class="mob-stat-item">💎 <strong id="mobileCrystals">0</strong></span>
+                </div>
             </div>
 
             <div class="hud-group center-hud">
@@ -84,9 +91,9 @@
             </div>
         </header>
 
-        <!-- SHIP SELECTION / START SCREEN OVERLAY -->
+        <!-- MAIN MENU OVERLAY -->
         <div id="startScreen" class="overlay-screen active">
-            <div class="screen-card">
+            <div class="screen-card main-menu-card">
                 <div class="game-logo">
                     <span class="logo-badge">CYBER SPACE WARFARE</span>
                     <h1 class="logo-title">ASTEROIDS DELUXE</h1>
@@ -94,77 +101,178 @@
 
                 <div class="vault-balance" id="vaultBalanceCard">
                     <span>Banked Crystal Vault: <strong class="cyan-text" id="vaultCrystalDisplay">💎 0</strong></span>
-                    <button id="openShopChipBtn" class="vault-shop-chip">🛒 OPEN SHOP</button>
+                    <button id="openShopChipBtn" class="vault-shop-chip">🛒 SHOP</button>
                 </div>
 
-                <div class="mode-selector">
-                    <button class="mode-tab active" data-mode="classic">🏆 Classic Survival</button>
-                    <button class="mode-tab" data-mode="timerush">⏱️ Time Rush (3m)</button>
-                    <button class="mode-tab" data-mode="bossrush">👾 Boss Rush</button>
+                <div class="main-menu-stats-badge">
+                    <div class="mini-stat">
+                        <span class="lbl">HIGH SCORE</span>
+                        <span class="val gold-text" id="mainHighScore">000,000</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="mini-stat">
+                        <span class="lbl">SELECTED MODE</span>
+                        <span class="val cyan-text" id="mainSelectedMode">Classic Survival</span>
+                    </div>
                 </div>
 
-                <h2 class="section-title">SELECT YOUR STARFIGHTER</h2>
-                <div class="ship-select-grid">
-                    <!-- Viper Fighter -->
-                    <div class="ship-card selected" data-ship="viper" id="shipCardViper">
-                        <div class="ship-preview viper-preview">⚡</div>
-                        <h3 class="ship-name">Viper Fighter</h3>
-                        <p class="ship-desc">High speed, sharp handling & rapid laser output.</p>
-                        <div class="ship-stats">
-                            <span class="stat-pill">Speed: 9/10</span>
-                            <span class="stat-pill">Armor: 5/10</span>
-                            <span class="stat-pill">Fire Rate: 8/10</span>
-                        </div>
-                    </div>
-
-                    <!-- Titan Cruiser -->
-                    <div class="ship-card locked" data-ship="titan" id="shipCardTitan">
-                        <div class="lock-overlay" id="lockOverlayTitan">
-                            <span class="lock-icon">🔒</span>
-                            <span class="lock-cost">💎 150</span>
-                            <button class="btn btn-primary btn-unlock" id="unlockTitanBtn">UNLOCK SHIP</button>
-                        </div>
-                        <div class="ship-preview titan-preview">🛡️</div>
-                        <h3 class="ship-name">Titan Cruiser</h3>
-                        <p class="ship-desc">Heavy armor, dual pulse cannons & blast shield.</p>
-                        <div class="ship-stats">
-                            <span class="stat-pill">Speed: 6/10</span>
-                            <span class="stat-pill">Armor: 10/10</span>
-                            <span class="stat-pill">Fire Rate: 7/10</span>
-                        </div>
-                    </div>
-
-                    <!-- Quantum Phantom -->
-                    <div class="ship-card locked" data-ship="quantum" id="shipCardQuantum">
-                        <div class="lock-overlay" id="lockOverlayQuantum">
-                            <span class="lock-icon">🔒</span>
-                            <span class="lock-cost">💎 300</span>
-                            <button class="btn btn-primary btn-unlock" id="unlockQuantumBtn">UNLOCK SHIP</button>
-                        </div>
-                        <div class="ship-preview quantum-preview">🌀</div>
-                        <h3 class="ship-name">Quantum Phantom</h3>
-                        <p class="ship-desc">Stealth phase-dash, homing missiles & warp tech.</p>
-                        <div class="ship-stats">
-                            <span class="stat-pill">Speed: 8/10</span>
-                            <span class="stat-pill">Armor: 6/10</span>
-                            <span class="stat-pill">Fire Rate: 9/10</span>
-                        </div>
-                    </div>
+                <!-- MAIN MENU ACTION BUTTONS -->
+                <div class="main-menu-actions">
+                    <button id="openHangarBtn" class="btn btn-primary btn-main-play">
+                        🚀 PLAY GAME
+                    </button>
+                    <button id="startShopBtn" class="btn btn-secondary btn-main-shop">
+                        🛒 UPGRADE SHOP
+                    </button>
+                    <button id="helpBtn" class="btn btn-secondary btn-main-help">
+                        ❓ HOW TO PLAY
+                    </button>
                 </div>
 
                 <div class="controls-guide">
-                    <span>📱 <strong>Mobile Controls:</strong> Left Thumb Joystick to Steer/Thrust | Right Buttons to Shoot & Special | <strong>PC:</strong> WASD/Space</span>
+                    <span>🎮 <strong>Controls:</strong> Mobile Thumb Joystick & Action Buttons | <strong>PC:</strong> WASD / Space / Shift</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- HANGAR & MISSION SELECT SCREEN OVERLAY -->
+        <div id="hangarScreen" class="overlay-screen">
+            <div class="screen-card hangar-card">
+                <div class="hangar-header">
+                    <button id="hangarBackBtn" class="btn btn-secondary btn-back">
+                        ⬅️ MENU
+                    </button>
+                    <div class="hangar-title-group">
+                        <span class="logo-badge">STARFIGHTER HANGAR</span>
+                        <h2 class="hangar-title">MISSION PREPARATION</h2>
+                    </div>
+                    <div class="hangar-vault">
+                        <span class="cyan-text" id="hangarCrystalDisplay">💎 0</span>
+                    </div>
                 </div>
 
-                <div class="start-actions">
+                <!-- SECTION 1: GAME MODE SELECTOR CARDS -->
+                <div class="hangar-section">
+                    <h3 class="section-title">1. SELECT GAME MODE</h3>
+                    <div class="mode-cards-grid">
+                        <div class="mode-card active" data-mode="classic" id="modeCardClassic">
+                            <div class="mode-icon">🏆</div>
+                            <div class="mode-info">
+                                <div class="mode-name">Classic Survival</div>
+                                <div class="mode-desc">Infinite waves. Alien Mothership Boss spawns every 5 waves.</div>
+                            </div>
+                            <span class="mode-badge">STANDARD</span>
+                        </div>
+
+                        <div class="mode-card" data-mode="timerush" id="modeCardTimerush">
+                            <div class="mode-icon">⏱️</div>
+                            <div class="mode-info">
+                                <div class="mode-name">Time Rush (3m)</div>
+                                <div class="mode-desc">Score max points in 3 minutes. Instant respawns with score penalty.</div>
+                            </div>
+                            <span class="mode-badge gold-badge">RACE</span>
+                        </div>
+
+                        <div class="mode-card" data-mode="bossrush" id="modeCardBossrush">
+                            <div class="mode-icon">👾</div>
+                            <div class="mode-info">
+                                <div class="mode-name">Boss Rush</div>
+                                <div class="mode-desc">Face continuous enraged Alien Motherships with escalating power.</div>
+                            </div>
+                            <span class="mode-badge danger-badge">HARDCORE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: STARFIGHTER SELECTION & CANVAS PREVIEW -->
+                <div class="hangar-section">
+                    <h3 class="section-title">2. SELECT STARFIGHTER</h3>
+
+                    <!-- LIVE HANGAR CANVAS PREVIEW & STATS DISPLAY -->
+                    <div class="ship-hangar-display">
+                        <div class="ship-canvas-box">
+                            <canvas id="hangarShipCanvas" width="180" height="140"></canvas>
+                            <span class="preview-tag">LIVE PREVIEW</span>
+                        </div>
+                        <div class="ship-details-box" id="hangarShipDetails">
+                            <h4 class="ship-active-name" id="shipActiveName">Viper Fighter</h4>
+                            <p class="ship-active-desc" id="shipActiveDesc">High speed, sharp handling & rapid laser output.</p>
+                            <div class="ship-stat-bars">
+                                <div class="stat-bar-row">
+                                    <span>SPEED</span>
+                                    <div class="bar-track"><div class="bar-fill" id="barSpeed" style="width: 80%;"></div></div>
+                                </div>
+                                <div class="stat-bar-row">
+                                    <span>ARMOR</span>
+                                    <div class="bar-track"><div class="bar-fill" id="barArmor" style="width: 50%;"></div></div>
+                                </div>
+                                <div class="stat-bar-row">
+                                    <span>FIREPOWER</span>
+                                    <div class="bar-track"><div class="bar-fill" id="barFirepower" style="width: 75%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MOBILE DEDICATED SHIP SELECTOR TABS -->
+                    <div class="mobile-ship-tabs" id="mobileShipTabs">
+                        <button class="ship-tab active" data-ship="viper" id="tabViper">⚡ Viper</button>
+                        <button class="ship-tab" data-ship="titan" id="tabTitan">🛡️ Titan <span class="tab-lock-icon" id="tabLockTitan">🔒</span></button>
+                        <button class="ship-tab" data-ship="quantum" id="tabQuantum">🌀 Quantum <span class="tab-lock-icon" id="tabLockQuantum">🔒</span></button>
+                    </div>
+
+                    <div class="ship-select-grid">
+                        <!-- Viper Fighter -->
+                        <div class="ship-card selected" data-ship="viper" id="shipCardViper">
+                            <div class="ship-preview viper-preview">⚡</div>
+                            <h3 class="ship-name">Viper Fighter</h3>
+                            <p class="ship-desc">High speed, sharp handling & rapid laser output.</p>
+                            <div class="ship-stats">
+                                <span class="stat-pill">Speed: 9/10</span>
+                                <span class="stat-pill">Armor: 5/10</span>
+                                <span class="stat-pill">Fire Rate: 8/10</span>
+                            </div>
+                        </div>
+
+                        <!-- Titan Cruiser -->
+                        <div class="ship-card locked" data-ship="titan" id="shipCardTitan">
+                            <div class="lock-overlay" id="lockOverlayTitan">
+                                <span class="lock-icon">🔒</span>
+                                <span class="lock-cost">💎 150</span>
+                                <button class="btn btn-primary btn-unlock" id="unlockTitanBtn">UNLOCK SHIP</button>
+                            </div>
+                            <div class="ship-preview titan-preview">🛡️</div>
+                            <h3 class="ship-name">Titan Cruiser</h3>
+                            <p class="ship-desc">Heavy armor, dual pulse cannons & blast shield.</p>
+                            <div class="ship-stats">
+                                <span class="stat-pill">Speed: 6/10</span>
+                                <span class="stat-pill">Armor: 10/10</span>
+                                <span class="stat-pill">Fire Rate: 7/10</span>
+                            </div>
+                        </div>
+
+                        <!-- Quantum Phantom -->
+                        <div class="ship-card locked" data-ship="quantum" id="shipCardQuantum">
+                            <div class="lock-overlay" id="lockOverlayQuantum">
+                                <span class="lock-icon">🔒</span>
+                                <span class="lock-cost">💎 300</span>
+                                <button class="btn btn-primary btn-unlock" id="unlockQuantumBtn">UNLOCK SHIP</button>
+                            </div>
+                            <div class="ship-preview quantum-preview">🌀</div>
+                            <h3 class="ship-name">Quantum Phantom</h3>
+                            <p class="ship-desc">Stealth phase-dash, homing missiles & warp tech.</p>
+                            <div class="ship-stats">
+                                <span class="stat-pill">Speed: 8/10</span>
+                                <span class="stat-pill">Armor: 6/10</span>
+                                <span class="stat-pill">Fire Rate: 9/10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hangar-actions">
                     <button id="startGameBtn" class="btn btn-primary btn-launch">
                         🚀 LAUNCH MISSION
-                    </button>
-                    <button id="startShopBtn" class="btn btn-secondary btn-shop-menu">
-                        🛒 UPGRADE SHOP
-                    </button>
-                    <button id="helpBtn" class="btn btn-secondary btn-help">
-                        ❓ HOW TO PLAY
                     </button>
                 </div>
             </div>

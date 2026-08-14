@@ -82,6 +82,16 @@ class Game {
         this.W = window.innerWidth;
         this.H = window.innerHeight;
         if (this.particles) this.particles.resizeStarfield(this.W, this.H);
+
+        const isMobile = window.innerWidth <= 850 || window.innerHeight <= 550 || ('ontouchstart' in window && window.innerWidth <= 1024);
+        if (isMobile) {
+            document.body.classList.add('is-mobile');
+            document.body.classList.remove('is-pc');
+        } else {
+            document.body.classList.add('is-pc');
+            document.body.classList.remove('is-mobile');
+        }
+
         this._checkOrientation();
     }
 
@@ -803,6 +813,7 @@ class Game {
     }
 
     _drawBombHUD(ctx, W, H) {
+        if (document.body.classList.contains('is-mobile')) return;
         ctx.save();
         ctx.font = `14px 'Outfit', sans-serif`;
         ctx.fillStyle = '#94a3b8';
@@ -862,8 +873,29 @@ class Game {
         document.getElementById('highScoreDisplay').textContent = fmt(this.highScore);
         document.getElementById('crystalDisplay').textContent = `💎 ${this.crystalCount}`;
 
+        const mobScore = document.getElementById('mobileScore');
+        const mobCryst = document.getElementById('mobileCrystals');
+        if (mobScore) mobScore.textContent = fmt(this.score);
+        if (mobCryst) mobCryst.textContent = fmt(this.crystalCount);
+
         const vaultDisplay = document.getElementById('vaultCrystalDisplay');
         if (vaultDisplay) vaultDisplay.textContent = `💎 ${fmt(this.totalCrystals)}`;
+
+        const hangarVault = document.getElementById('hangarCrystalDisplay');
+        if (hangarVault) hangarVault.textContent = `💎 ${fmt(this.totalCrystals)}`;
+
+        const mainHi = document.getElementById('mainHighScore');
+        if (mainHi) mainHi.textContent = fmt(this.highScore);
+
+        const mainMode = document.getElementById('mainSelectedMode');
+        if (mainMode) {
+            const modeTitles = {
+                classic: '🏆 Classic Survival',
+                timerush: '⏱️ Time Rush (3m)',
+                bossrush: '👾 Boss Rush'
+            };
+            mainMode.textContent = modeTitles[this.mode] || 'Classic Survival';
+        }
 
         const bombBadge = document.getElementById('touchBombCount');
         if (bombBadge) bombBadge.textContent = this.bombs;
@@ -881,14 +913,111 @@ class Game {
         }
     }
 
+    _drawHangarPreview() {
+        const canvas = document.getElementById('hangarShipCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Radial glow background
+        const grad = ctx.createRadialGradient(w/2, h/2, 5, w/2, h/2, 60);
+        grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+        grad.addColorStop(1, 'rgba(5, 7, 14, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        const angle = (performance.now() * 0.0018) % (Math.PI * 2);
+        ctx.save();
+        ctx.translate(w / 2, h / 2);
+        ctx.rotate(angle);
+
+        const color = this.shipType === 'titan' ? '#00f5d4' : this.shipType === 'quantum' ? '#a855f7' : '#38bdf8';
+        const radius = this.shipType === 'titan' ? 22 : this.shipType === 'quantum' ? 17 : 19;
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+        ctx.fillStyle = 'rgba(13, 18, 36, 0.95)';
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, 0);
+        ctx.lineTo(-radius, -radius * 0.75);
+        ctx.lineTo(-radius * 0.4, 0);
+        ctx.lineTo(-radius, radius * 0.75);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Animated thrust flame
+        const flameSize = 8 + Math.sin(performance.now() * 0.015) * 3;
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.4, 0);
+        ctx.lineTo(-radius - flameSize, -radius * 0.25);
+        ctx.lineTo(-radius - flameSize * 1.3, 0);
+        ctx.lineTo(-radius - flameSize, radius * 0.25);
+        ctx.closePath();
+        ctx.fillStyle = '#ff2a85';
+        ctx.shadowColor = '#ff2a85';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+
+        ctx.restore();
+
+        const hangarScreen = document.getElementById('hangarScreen');
+        if (hangarScreen && (hangarScreen.classList.contains('active') || hangarScreen.style.display === 'flex')) {
+            requestAnimationFrame(() => this._drawHangarPreview());
+        }
+    }
+
     _updateShipCardsUI() {
         this._updateHUD();
+
+        // Update Mode Cards UI
+        ['classic', 'timerush', 'bossrush'].forEach(m => {
+            const cap = m.charAt(0).toUpperCase() + m.slice(1);
+            const card = document.getElementById(`modeCard${cap}`);
+            if (card) {
+                if (m === this.mode) card.classList.add('active');
+                else card.classList.remove('active');
+            }
+        });
+
+        // Update Active Ship Stats Display in Hangar
+        const shipNames = { viper: 'Viper Fighter', titan: 'Titan Cruiser', quantum: 'Quantum Phantom' };
+        const shipDescs = {
+            viper: 'High speed, sharp handling & rapid laser output.',
+            titan: 'Heavy armor, dual pulse cannons & blast shield.',
+            quantum: 'Stealth phase-dash, homing missiles & warp tech.'
+        };
+        const shipStats = {
+            viper: { speed: 90, armor: 50, firepower: 80 },
+            titan: { speed: 60, armor: 100, firepower: 70 },
+            quantum: { speed: 80, armor: 60, firepower: 90 }
+        };
+
+        const activeName = document.getElementById('shipActiveName');
+        const activeDesc = document.getElementById('shipActiveDesc');
+        const barSpeed = document.getElementById('barSpeed');
+        const barArmor = document.getElementById('barArmor');
+        const barFirepower = document.getElementById('barFirepower');
+
+        if (activeName) activeName.textContent = shipNames[this.shipType] || 'Viper Fighter';
+        if (activeDesc) activeDesc.textContent = shipDescs[this.shipType] || '';
+        if (barSpeed) barSpeed.style.width = `${shipStats[this.shipType]?.speed || 80}%`;
+        if (barArmor) barArmor.style.width = `${shipStats[this.shipType]?.armor || 50}%`;
+        if (barFirepower) barFirepower.style.width = `${shipStats[this.shipType]?.firepower || 75}%`;
 
         ['viper', 'titan', 'quantum'].forEach(st => {
             const cap = st.charAt(0).toUpperCase() + st.slice(1);
             const card = document.getElementById(`shipCard${cap}`);
             const overlay = document.getElementById(`lockOverlay${cap}`);
+            const tabLock = document.getElementById(`tabLock${cap}`);
             const isUnlocked = this.shop.isShipUnlocked(st);
+
+            if (tabLock) tabLock.style.display = isUnlocked ? 'none' : 'inline';
 
             if (card) {
                 if (isUnlocked) {
@@ -899,13 +1028,23 @@ class Game {
                     if (overlay) overlay.style.display = 'flex';
                 }
 
-                if (st === this.shipType && isUnlocked) {
+                if (st === this.shipType) {
                     card.classList.add('selected');
+                    card.classList.add('mobile-active');
                 } else {
                     card.classList.remove('selected');
+                    card.classList.remove('mobile-active');
                 }
             }
+
+            const tab = document.getElementById(`tab${cap}`);
+            if (tab) {
+                if (this.shipType === st) tab.classList.add('active');
+                else tab.classList.remove('active');
+            }
         });
+
+        this._drawHangarPreview();
     }
 
     _setWaveBadge(text) {
@@ -1052,13 +1191,57 @@ class Game {
             } catch (e) {}
         });
 
-        // Mode tabs
-        document.querySelectorAll('.mode-tab').forEach(btn => {
-            btn.addEventListener('click', () => {
+        // MAIN MENU -> HANGAR NAVIGATION
+        const openHangar = () => {
+            this._triggerHaptic('tap');
+            const startScreen = document.getElementById('startScreen');
+            const hangarScreen = document.getElementById('hangarScreen');
+            if (startScreen) {
+                startScreen.style.display = 'none';
+                startScreen.classList.remove('active');
+            }
+            if (hangarScreen) {
+                hangarScreen.style.display = 'flex';
+                hangarScreen.classList.add('active');
+            }
+            this._updateShipCardsUI();
+        };
+
+        const closeHangar = () => {
+            this._triggerHaptic('tap');
+            const startScreen = document.getElementById('startScreen');
+            const hangarScreen = document.getElementById('hangarScreen');
+            if (hangarScreen) {
+                hangarScreen.style.display = 'none';
+                hangarScreen.classList.remove('active');
+            }
+            if (startScreen) {
+                startScreen.style.display = 'flex';
+                startScreen.classList.add('active');
+            }
+            this._updateHUD();
+        };
+
+        document.getElementById('openHangarBtn')?.addEventListener('click', openHangar);
+        document.getElementById('hangarBackBtn')?.addEventListener('click', closeHangar);
+
+        // Hangar Mode Selection Cards
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const m = card.dataset.mode;
                 this._triggerHaptic('tap');
-                document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.mode = btn.dataset.mode;
+                this.mode = m;
+                this._updateShipCardsUI();
+            });
+        });
+
+        // Mobile Ship Tabs
+        document.querySelectorAll('.ship-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const st = tab.dataset.ship;
+                this._triggerHaptic('tap');
+                this.shipType = st;
+                this._updateShipCardsUI();
             });
         });
 
@@ -1108,12 +1291,22 @@ class Game {
         document.getElementById('closeHelpBtn')?.addEventListener('click', () => toggleHelp(false));
         document.getElementById('gotitBtn')?.addEventListener('click', () => toggleHelp(false));
 
-        // Launch
-        document.getElementById('startGameBtn').addEventListener('click', () => {
-            this._triggerHaptic('tap');
-            document.getElementById('startScreen').style.display = 'none';
-            document.getElementById('startScreen').classList.remove('active');
-            this.startGame();
+        // Launch Mission (From Hangar or Start Screen)
+        document.querySelectorAll('#startGameBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this._triggerHaptic('tap');
+                const startScreen = document.getElementById('startScreen');
+                const hangarScreen = document.getElementById('hangarScreen');
+                if (startScreen) {
+                    startScreen.style.display = 'none';
+                    startScreen.classList.remove('active');
+                }
+                if (hangarScreen) {
+                    hangarScreen.style.display = 'none';
+                    hangarScreen.classList.remove('active');
+                }
+                this.startGame();
+            });
         });
 
         // Pause button
@@ -1142,12 +1335,9 @@ class Game {
             const m = document.getElementById('statusModal');
             m.style.display = 'none';
             m.classList.remove('active');
-            const s = document.getElementById('startScreen');
-            s.style.display = 'flex';
-            s.classList.add('active');
+            openHangar();
             this.state = 'menu';
             this.ship = null;
-            this._updateShipCardsUI();
         });
 
         // Shop Triggers (HUD, Main Menu, Vault Chip, Status Modal)
