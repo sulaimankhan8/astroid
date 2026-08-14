@@ -332,6 +332,14 @@ export class UFO {
         if (this.y > height - 60) this.y = height - 60;
     }
 
+    canShoot() {
+        if (this.shootTimer >= 90) {
+            this.shootTimer = 0;
+            return true;
+        }
+        return false;
+    }
+
     draw(ctx) {
         ctx.save();
         ctx.translate(this.x, this.y);
@@ -393,6 +401,15 @@ export class BossMothership {
         if (this.phase === 1 && this.hp <= this.maxHp * 0.4) {
             this.phase = 2;
         }
+    }
+
+    canShoot() {
+        const interval = this.phase === 2 ? 45 : 75;
+        if (this.shootTimer >= interval) {
+            this.shootTimer = 0;
+            return true;
+        }
+        return false;
     }
 
     draw(ctx) {

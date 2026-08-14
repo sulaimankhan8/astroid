@@ -422,7 +422,7 @@ class Game {
             const u = this.ufos[i];
             u.update(W, H, this.ship);
 
-            if (u.canShoot()) {
+            if (typeof u.canShoot === 'function' && u.canShoot()) {
                 const aim = Math.atan2(this.ship.y - u.y, this.ship.x - u.x);
                 this.enemies.push(new Bullet(u.x, u.y, aim + (Math.random() - 0.5) * 0.2, 1, true));
             }
@@ -455,7 +455,7 @@ class Game {
         if (this.boss) {
             this.boss.update(W, H, this.ship);
 
-            if (this.boss.canShoot()) {
+            if (typeof this.boss.canShoot === 'function' && this.boss.canShoot()) {
                 this._bossShoot(this.boss);
             }
 
@@ -623,7 +623,11 @@ class Game {
     }
 
     useBomb() {
-        if (this.bombs <= 0 || this.state !== 'playing') return;
+        if (this.state !== 'playing') return;
+        if (this.bombs <= 0) {
+            this._spawnPopup(this.W / 2, this.H / 2 - 40, '⚠️ OUT OF EMP BOMBS!', '#ef4444');
+            return;
+        }
         this.bombs--;
         this._triggerHaptic('bomb');
 
@@ -641,7 +645,7 @@ class Game {
         this.ufos = [];
         this.enemies = [];
         audio.playExplosion('boss');
-        if (bonusScore > 0) this._spawnPopup(this.W / 2, this.H / 2 - 80, `💣 +${bonusScore}`, '#ffd700');
+        this._spawnPopup(this.W / 2, this.H / 2 - 80, `💣 EMP BLAST! +${bonusScore}`, '#ffd700');
         this._updateHUD();
     }
 
