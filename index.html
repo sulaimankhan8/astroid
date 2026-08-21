@@ -14,6 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -22,11 +25,11 @@
         <!-- PORTRAIT / LANDSCAPE PROMPT OVERLAY -->
         <div id="landscapePrompt" class="landscape-prompt-overlay">
             <div class="prompt-card">
-                <div class="phone-rotate-icon">📱🔄</div>
+                <div class="phone-rotate-icon"><i class="fa-solid fa-mobile-screen-button"></i><i class="fa-solid fa-rotate"></i></div>
                 <h2>PLEASE ROTATE YOUR DEVICE</h2>
                 <p>Asteroids Deluxe is designed for <strong>Mobile Landscape Mode</strong> for maximum tactical view & controls.</p>
                 <button id="fullscreenLockBtn" class="btn btn-primary btn-fullscreen">
-                    🚀 ENTER LANDSCAPE FULLSCREEN
+                    <i class="fa-solid fa-expand"></i> ENTER LANDSCAPE FULLSCREEN
                 </button>
             </div>
         </div>
@@ -47,14 +50,14 @@
                 </div>
                 <div class="stat-box">
                     <span class="stat-label">CRYSTALS</span>
-                    <span class="stat-value cyan-text" id="crystalDisplay">💎 0</span>
+                    <span class="stat-value cyan-text" id="crystalDisplay"><i class="fa-solid fa-gem"></i> 0</span>
                 </div>
 
                 <!-- COMPACT STAT PILL FOR MOBILE HUD -->
                 <div class="mobile-stat-pill" id="mobileStatPill">
                     <span class="mob-stat-item">PTS: <strong id="mobileScore">0</strong></span>
                     <span class="mob-stat-sep">|</span>
-                    <span class="mob-stat-item">💎 <strong id="mobileCrystals">0</strong></span>
+                    <span class="mob-stat-item"><i class="fa-solid fa-gem cyan-text"></i> <strong id="mobileCrystals">0</strong></span>
                 </div>
             </div>
 
@@ -80,13 +83,13 @@
                     <!-- Ship icons rendered dynamically -->
                 </div>
                 <button id="shopBtn" class="icon-btn" title="Upgrade Shop">
-                    <span>🛒</span>
+                    <i class="fa-solid fa-cart-shopping"></i>
                 </button>
                 <button id="soundBtn" class="icon-btn" title="Toggle Sound">
-                    <span id="soundIcon">🔊</span>
+                    <span id="soundIcon"><i class="fa-solid fa-volume-high"></i></span>
                 </button>
                 <button id="pauseBtn" class="icon-btn" title="Pause Game">
-                    <span>⏸️</span>
+                    <i class="fa-solid fa-pause"></i>
                 </button>
             </div>
         </header>
@@ -100,8 +103,8 @@
                 </div>
 
                 <div class="vault-balance" id="vaultBalanceCard">
-                    <span>Banked Crystal Vault: <strong class="cyan-text" id="vaultCrystalDisplay">💎 0</strong></span>
-                    <button id="openShopChipBtn" class="vault-shop-chip">🛒 SHOP</button>
+                    <span>Banked Crystal Vault: <strong class="cyan-text" id="vaultCrystalDisplay"><i class="fa-solid fa-gem"></i> 0</strong></span>
+                    <button id="openShopChipBtn" class="vault-shop-chip"><i class="fa-solid fa-cart-shopping"></i> SHOP</button>
                 </div>
 
                 <div class="main-menu-stats-badge">
@@ -112,25 +115,25 @@
                     <div class="stat-divider"></div>
                     <div class="mini-stat">
                         <span class="lbl">SELECTED MODE</span>
-                        <span class="val cyan-text" id="mainSelectedMode">Classic Survival</span>
+                        <span class="val cyan-text" id="mainSelectedMode"><i class="fa-solid fa-trophy text-gold"></i> Classic Survival</span>
                     </div>
                 </div>
 
                 <!-- MAIN MENU ACTION BUTTONS -->
                 <div class="main-menu-actions">
                     <button id="openHangarBtn" class="btn btn-primary btn-main-play">
-                        🚀 PLAY GAME
+                        <i class="fa-solid fa-rocket"></i> PLAY GAME
                     </button>
                     <button id="startShopBtn" class="btn btn-secondary btn-main-shop">
-                        🛒 UPGRADE SHOP
+                        <i class="fa-solid fa-cart-shopping"></i> UPGRADE SHOP
                     </button>
                     <button id="helpBtn" class="btn btn-secondary btn-main-help">
-                        ❓ HOW TO PLAY
+                        <i class="fa-solid fa-circle-question"></i> HOW TO PLAY
                     </button>
                 </div>
 
                 <div class="controls-guide">
-                    <span>🎮 <strong>Controls:</strong> Mobile Thumb Joystick & Action Buttons | <strong>PC:</strong> WASD / Space / Shift</span>
+                    <span><i class="fa-solid fa-gamepad"></i> <strong>Controls:</strong> Mobile Thumb Joystick & Action Buttons | <strong>PC:</strong> WASD / Space / Shift</span>
                 </div>
             </div>
         </div>
@@ -140,14 +143,14 @@
             <div class="screen-card hangar-card">
                 <div class="hangar-header">
                     <button id="hangarBackBtn" class="btn btn-secondary btn-back">
-                        ⬅️ MENU
+                        <i class="fa-solid fa-arrow-left"></i> MENU
                     </button>
                     <div class="hangar-title-group">
                         <span class="logo-badge">STARFIGHTER HANGAR</span>
                         <h2 class="hangar-title">MISSION PREPARATION</h2>
                     </div>
                     <div class="hangar-vault">
-                        <span class="cyan-text" id="hangarCrystalDisplay">💎 0</span>
+                        <span class="cyan-text" id="hangarCrystalDisplay"><i class="fa-solid fa-gem"></i> 0</span>
                     </div>
                 </div>
 
@@ -156,7 +159,7 @@
                     <h3 class="section-title">1. SELECT GAME MODE</h3>
                     <div class="mode-cards-grid">
                         <div class="mode-card active" data-mode="classic" id="modeCardClassic">
-                            <div class="mode-icon">🏆</div>
+                            <div class="mode-icon-box text-gold"><i class="fa-solid fa-trophy"></i></div>
                             <div class="mode-info">
                                 <div class="mode-name">Classic Survival</div>
                                 <div class="mode-desc">Infinite waves. Alien Mothership Boss spawns every 5 waves.</div>
@@ -165,7 +168,7 @@
                         </div>
 
                         <div class="mode-card" data-mode="timerush" id="modeCardTimerush">
-                            <div class="mode-icon">⏱️</div>
+                            <div class="mode-icon-box text-cyan"><i class="fa-solid fa-stopwatch"></i></div>
                             <div class="mode-info">
                                 <div class="mode-name">Time Rush (3m)</div>
                                 <div class="mode-desc">Score max points in 3 minutes. Instant respawns with score penalty.</div>
@@ -174,7 +177,7 @@
                         </div>
 
                         <div class="mode-card" data-mode="bossrush" id="modeCardBossrush">
-                            <div class="mode-icon">👾</div>
+                            <div class="mode-icon-box text-danger"><i class="fa-solid fa-skull"></i></div>
                             <div class="mode-info">
                                 <div class="mode-name">Boss Rush</div>
                                 <div class="mode-desc">Face continuous enraged Alien Motherships with escalating power.</div>
@@ -214,17 +217,11 @@
                         </div>
                     </div>
 
-                    <!-- MOBILE DEDICATED SHIP SELECTOR TABS -->
-                    <div class="mobile-ship-tabs" id="mobileShipTabs">
-                        <button class="ship-tab active" data-ship="viper" id="tabViper">⚡ Viper</button>
-                        <button class="ship-tab" data-ship="titan" id="tabTitan">🛡️ Titan <span class="tab-lock-icon" id="tabLockTitan">🔒</span></button>
-                        <button class="ship-tab" data-ship="quantum" id="tabQuantum">🌀 Quantum <span class="tab-lock-icon" id="tabLockQuantum">🔒</span></button>
-                    </div>
-
+                    <!-- UNIFIED RESPONSIVE STARFIGHTER CARDS GRID -->
                     <div class="ship-select-grid">
                         <!-- Viper Fighter -->
                         <div class="ship-card selected" data-ship="viper" id="shipCardViper">
-                            <div class="ship-preview viper-preview">⚡</div>
+                            <div class="ship-icon-box viper-glow"><i class="fa-solid fa-bolt-lightning"></i></div>
                             <h3 class="ship-name">Viper Fighter</h3>
                             <p class="ship-desc">High speed, sharp handling & rapid laser output.</p>
                             <div class="ship-stats">
@@ -237,11 +234,11 @@
                         <!-- Titan Cruiser -->
                         <div class="ship-card locked" data-ship="titan" id="shipCardTitan">
                             <div class="lock-overlay" id="lockOverlayTitan">
-                                <span class="lock-icon">🔒</span>
-                                <span class="lock-cost">💎 150</span>
-                                <button class="btn btn-primary btn-unlock" id="unlockTitanBtn">UNLOCK SHIP</button>
+                                <div class="lock-icon-box"><i class="fa-solid fa-lock"></i></div>
+                                <span class="lock-cost"><i class="fa-solid fa-gem cyan-text"></i> 150</span>
+                                <button class="btn btn-primary btn-unlock" id="unlockTitanBtn"><i class="fa-solid fa-key"></i> UNLOCK SHIP</button>
                             </div>
-                            <div class="ship-preview titan-preview">🛡️</div>
+                            <div class="ship-icon-box titan-glow"><i class="fa-solid fa-shield-halved"></i></div>
                             <h3 class="ship-name">Titan Cruiser</h3>
                             <p class="ship-desc">Heavy armor, dual pulse cannons & blast shield.</p>
                             <div class="ship-stats">
@@ -254,11 +251,11 @@
                         <!-- Quantum Phantom -->
                         <div class="ship-card locked" data-ship="quantum" id="shipCardQuantum">
                             <div class="lock-overlay" id="lockOverlayQuantum">
-                                <span class="lock-icon">🔒</span>
-                                <span class="lock-cost">💎 300</span>
-                                <button class="btn btn-primary btn-unlock" id="unlockQuantumBtn">UNLOCK SHIP</button>
+                                <div class="lock-icon-box"><i class="fa-solid fa-lock"></i></div>
+                                <span class="lock-cost"><i class="fa-solid fa-gem cyan-text"></i> 300</span>
+                                <button class="btn btn-primary btn-unlock" id="unlockQuantumBtn"><i class="fa-solid fa-key"></i> UNLOCK SHIP</button>
                             </div>
-                            <div class="ship-preview quantum-preview">🌀</div>
+                            <div class="ship-icon-box quantum-glow"><i class="fa-solid fa-atom"></i></div>
                             <h3 class="ship-name">Quantum Phantom</h3>
                             <p class="ship-desc">Stealth phase-dash, homing missiles & warp tech.</p>
                             <div class="ship-stats">
@@ -272,7 +269,7 @@
 
                 <div class="hangar-actions">
                     <button id="startGameBtn" class="btn btn-primary btn-launch">
-                        🚀 LAUNCH MISSION
+                        <i class="fa-solid fa-rocket"></i> LAUNCH MISSION
                     </button>
                 </div>
             </div>
@@ -282,88 +279,88 @@
         <div id="shopDrawer" class="overlay-drawer">
             <div class="drawer-content">
                 <div class="drawer-header">
-                    <h2>🛒 SPACE CRYSTAL UPGRADE SHOP</h2>
+                    <h2><i class="fa-solid fa-cart-shopping"></i> SPACE CRYSTAL UPGRADE SHOP</h2>
                     <button id="closeShopBtn" class="close-btn">&times;</button>
                 </div>
                 <div class="shop-balance">
-                    Available Crystals: <span class="cyan-text" id="shopCrystalCount">💎 0</span>
+                    Available Crystals: <span class="cyan-text" id="shopCrystalCount"><i class="fa-solid fa-gem"></i> 0</span>
                 </div>
                 <div class="shop-items-grid">
                     <!-- Laser Power -->
                     <div class="shop-item">
-                        <div class="item-icon">⚡</div>
+                        <div class="item-icon-box text-cyan"><i class="fa-solid fa-bolt-lightning"></i></div>
                         <div class="item-details">
                             <h3>Plasma Laser Power</h3>
                             <p>Increase laser damage & size</p>
                             <div class="item-level" id="levelLaser">Lvl 1/5</div>
                         </div>
                         <button class="btn btn-primary buy-btn" id="buyLaserBtn" data-upgrade="laser">
-                            💎 <span id="costLaser">50</span>
+                            <i class="fa-solid fa-gem"></i> <span id="costLaser">50</span>
                         </button>
                     </div>
 
                     <!-- Fire Rate -->
                     <div class="shop-item">
-                        <div class="item-icon">🔥</div>
+                        <div class="item-icon-box text-pink"><i class="fa-solid fa-fire-flame-curved"></i></div>
                         <div class="item-details">
                             <h3>Rapid Cannon Pulse</h3>
                             <p>Faster firing velocity & shorter delay</p>
                             <div class="item-level" id="levelFirerate">Lvl 1/5</div>
                         </div>
                         <button class="btn btn-primary buy-btn" id="buyFirerateBtn" data-upgrade="firerate">
-                            💎 <span id="costFirerate">40</span>
+                            <i class="fa-solid fa-gem"></i> <span id="costFirerate">40</span>
                         </button>
                     </div>
 
                     <!-- Shield Capacity -->
                     <div class="shop-item">
-                        <div class="item-icon">🛡️</div>
+                        <div class="item-icon-box text-green"><i class="fa-solid fa-shield-halved"></i></div>
                         <div class="item-details">
                             <h3>Force Shield Generator</h3>
                             <p>Absorb collision damage & hazards</p>
                             <div class="item-level" id="levelShield">Lvl 1/5</div>
                         </div>
                         <button class="btn btn-primary buy-btn" id="buyShieldBtn" data-upgrade="shield">
-                            💎 <span id="costShield">60</span>
+                            <i class="fa-solid fa-gem"></i> <span id="costShield">60</span>
                         </button>
                     </div>
 
                     <!-- Bomb Capacity -->
                     <div class="shop-item">
-                        <div class="item-icon">💣</div>
+                        <div class="item-icon-box text-purple"><i class="fa-solid fa-bomb"></i></div>
                         <div class="item-details">
                             <h3>EMP Smart Bomb Charge</h3>
                             <p>Destroys all asteroids & UFOs in radius</p>
                             <div class="item-level" id="levelBomb">Lvl 1/3</div>
                         </div>
                         <button class="btn btn-primary buy-btn" id="buyBombBtn" data-upgrade="bomb">
-                            💎 <span id="costBomb">75</span>
+                            <i class="fa-solid fa-gem"></i> <span id="costBomb">75</span>
                         </button>
                     </div>
 
                     <!-- Crystal Magnet -->
                     <div class="shop-item">
-                        <div class="item-icon">🧲</div>
+                        <div class="item-icon-box text-gold"><i class="fa-solid fa-magnet"></i></div>
                         <div class="item-details">
                             <h3>Crystal Magnet Field</h3>
                             <p>Attract floating crystals from a distance</p>
                             <div class="item-level" id="levelMagnet">Lvl 1/5</div>
                         </div>
                         <button class="btn btn-primary buy-btn" id="buyMagnetBtn" data-upgrade="magnet">
-                            💎 <span id="costMagnet">40</span>
+                            <i class="fa-solid fa-gem"></i> <span id="costMagnet">40</span>
                         </button>
                     </div>
 
                     <!-- Extra Life Repair -->
                     <div class="shop-item">
-                        <div class="item-icon">❤️</div>
+                        <div class="item-icon-box text-danger"><i class="fa-solid fa-heart-pulse"></i></div>
                         <div class="item-details">
                             <h3>Hull Repair / Extra Life</h3>
                             <p>Add 1 extra life to current starfighter</p>
                             <div class="item-level" id="levelLife">Instant</div>
                         </div>
                         <button class="btn btn-primary buy-btn" id="buyLifeBtn" data-upgrade="life">
-                            💎 <span id="costLife">100</span>
+                            <i class="fa-solid fa-gem"></i> <span id="costLife">100</span>
                         </button>
                     </div>
                 </div>
@@ -374,66 +371,78 @@
         <div id="helpModal" class="overlay-screen">
             <div class="screen-card help-card">
                 <div class="drawer-header">
-                    <h2>❓ COMMANDER'S TACTICAL GUIDE</h2>
+                    <h2><i class="fa-solid fa-circle-question"></i> COMMANDER'S TACTICAL GUIDE</h2>
                     <button id="closeHelpBtn" class="close-btn">&times;</button>
                 </div>
                 <div class="help-grid">
                     <div class="help-box">
-                        <h3>🎮 PC Controls</h3>
+                        <h3><i class="fa-solid fa-desktop"></i> PC Controls</h3>
                         <p><strong>WASD / Arrow Keys</strong> — Steer & Thrust</p>
                         <p><strong>SPACE / Left-Click</strong> — Auto Fire</p>
                         <p><strong>SHIFT / Right-Click</strong> — Quantum Phase Dash</p>
                         <p><strong>E / B</strong> — EMP Smart Bomb</p>
                     </div>
                     <div class="help-box">
-                        <h3>📱 Mobile Touch Controls</h3>
-                        <p><strong>Left Thumb Joystick</strong> — Dynamic Touch Steering & Thrust</p>
-                        <p><strong>🔥 Button</strong> — Hold for Auto Fire</p>
-                        <p><strong>⚡ Button</strong> — Quantum Warp Dash</p>
-                        <p><strong>💣 Button</strong> — EMP Bomb Clear</p>
+                        <h3><i class="fa-solid fa-mobile-screen-button"></i> Mobile Touch Controls</h3>
+                        <p><strong>Left Thumb Joystick</strong> — Touch Steering & Thrust</p>
+                        <p><strong><i class="fa-solid fa-fire-flame-curved"></i> Button</strong> — Auto Fire</p>
+                        <p><strong><i class="fa-solid fa-atom"></i> Button</strong> — Quantum Dash</p>
+                        <p><strong><i class="fa-solid fa-bomb"></i> Button</strong> — EMP Bomb Clear</p>
                     </div>
                     <div class="help-box">
-                        <h3>💎 Economy & Crystals</h3>
+                        <h3><i class="fa-solid fa-gem"></i> Economy & Crystals</h3>
                         <p>Destroy Asteroids & UFOs to drop Space Crystals. Collect crystals to permanently unlock <strong>Titan Cruiser</strong> & <strong>Quantum Phantom</strong> or purchase <strong>Hangar Upgrades</strong>!</p>
                     </div>
                     <div class="help-box">
-                        <h3>🏆 Game Modes & Bosses</h3>
+                        <h3><i class="fa-solid fa-trophy"></i> Game Modes & Bosses</h3>
                         <p><strong>Classic:</strong> Infinite survival with Mothership Boss every 5 waves.</p>
                         <p><strong>Time Rush:</strong> Score max points in 3 minutes.</p>
                         <p><strong>Boss Rush:</strong> Face continuous enraged Alien Motherships.</p>
                     </div>
                 </div>
-                <button id="gotitBtn" class="btn btn-primary" style="align-self: center; margin-top: 10px;">Got It, Commander! 🚀</button>
+                <button id="gotitBtn" class="btn btn-primary" style="align-self: center; margin-top: 10px;">
+                    Got It, Commander! <i class="fa-solid fa-check"></i>
+                </button>
             </div>
         </div>
 
         <!-- PAUSE & GAME OVER MODAL -->
         <div id="statusModal" class="overlay-screen">
             <div class="screen-card modal-card">
-                <div class="modal-icon" id="modalIcon">💥</div>
+                <div class="modal-icon-badge" id="modalIconBox">
+                    <i class="fa-solid fa-pause" id="modalIconFa"></i>
+                </div>
                 <h1 class="modal-title" id="modalTitle">GAME OVER</h1>
                 <p class="modal-subtitle" id="modalSubtitle">Your starfighter was destroyed in the deep void.</p>
 
                 <div class="stats-summary-grid">
                     <div class="summary-box">
-                        <span class="summary-num" id="summaryScore">0</span>
-                        <span class="summary-lbl">Final Score</span>
+                        <span class="summary-num gold-text" id="summaryScore">0</span>
+                        <span class="summary-lbl">FINAL SCORE</span>
                     </div>
                     <div class="summary-box">
-                        <span class="summary-num" id="summaryWave">1</span>
-                        <span class="summary-lbl">Wave Reached</span>
+                        <span class="summary-num cyan-text" id="summaryWave">1</span>
+                        <span class="summary-lbl">WAVE REACHED</span>
                     </div>
                     <div class="summary-box">
-                        <span class="summary-num" id="summaryAsteroids">0</span>
-                        <span class="summary-lbl">Asteroids Destroyed</span>
+                        <span class="summary-num purple-text" id="summaryAsteroids">0</span>
+                        <span class="summary-lbl">TARGETS ELIMINATED</span>
                     </div>
                 </div>
 
                 <div class="modal-button-group">
-                    <button id="resumeBtn" class="btn btn-secondary" style="display: none;">▶ Resume</button>
-                    <button id="restartBtn" class="btn btn-primary">🔄 Play Again</button>
-                    <button id="modalShopBtn" class="btn btn-secondary">🛒 Upgrade Shop</button>
-                    <button id="hangarBtn" class="btn btn-secondary">🚀 Hangar</button>
+                    <button id="resumeBtn" class="btn btn-primary" style="display: none;">
+                        <i class="fa-solid fa-play"></i> Resume
+                    </button>
+                    <button id="restartBtn" class="btn btn-primary">
+                        <i class="fa-solid fa-rotate-right"></i> Play Again
+                    </button>
+                    <button id="modalShopBtn" class="btn btn-secondary">
+                        <i class="fa-solid fa-cart-shopping"></i> Upgrade Shop
+                    </button>
+                    <button id="hangarBtn" class="btn btn-secondary">
+                        <i class="fa-solid fa-rocket"></i> Hangar
+                    </button>
                 </div>
             </div>
         </div>
@@ -447,11 +456,15 @@
                 </div>
             </div>
             <div class="touch-zone right-zone">
-                <button class="touch-action-btn special-btn" id="touchSpecialBtn" title="Quantum Dash">⚡</button>
-                <button class="touch-action-btn bomb-btn" id="touchBombBtn" title="EMP Bomb">
-                    💣<span class="bomb-badge" id="touchBombCount">2</span>
+                <button class="touch-action-btn special-btn" id="touchSpecialBtn" title="Quantum Dash">
+                    <i class="fa-solid fa-atom"></i>
                 </button>
-                <button class="touch-action-btn fire-btn" id="touchFireBtn" title="Auto Fire">🔥</button>
+                <button class="touch-action-btn bomb-btn" id="touchBombBtn" title="EMP Bomb">
+                    <i class="fa-solid fa-bomb"></i><span class="bomb-badge" id="touchBombCount">2</span>
+                </button>
+                <button class="touch-action-btn fire-btn" id="touchFireBtn" title="Auto Fire">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
+                </button>
             </div>
         </div>
     </div>

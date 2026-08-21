@@ -871,18 +871,20 @@ class Game {
         const fmt = n => n.toLocaleString();
         document.getElementById('scoreDisplay').textContent = fmt(this.score);
         document.getElementById('highScoreDisplay').textContent = fmt(this.highScore);
-        document.getElementById('crystalDisplay').textContent = `💎 ${this.crystalCount}`;
+        
+        const crystalEl = document.getElementById('crystalDisplay');
+        if (crystalEl) crystalEl.innerHTML = `<i class="fa-solid fa-gem"></i> ${this.crystalCount}`;
 
         const mobScore = document.getElementById('mobileScore');
         const mobCryst = document.getElementById('mobileCrystals');
         if (mobScore) mobScore.textContent = fmt(this.score);
-        if (mobCryst) mobCryst.textContent = fmt(this.crystalCount);
+        if (mobCryst) mobCryst.innerHTML = `<i class="fa-solid fa-gem cyan-text"></i> ${fmt(this.crystalCount)}`;
 
         const vaultDisplay = document.getElementById('vaultCrystalDisplay');
-        if (vaultDisplay) vaultDisplay.textContent = `💎 ${fmt(this.totalCrystals)}`;
+        if (vaultDisplay) vaultDisplay.innerHTML = `<i class="fa-solid fa-gem cyan-text"></i> ${fmt(this.totalCrystals)}`;
 
         const hangarVault = document.getElementById('hangarCrystalDisplay');
-        if (hangarVault) hangarVault.textContent = `💎 ${fmt(this.totalCrystals)}`;
+        if (hangarVault) hangarVault.innerHTML = `<i class="fa-solid fa-gem cyan-text"></i> ${fmt(this.totalCrystals)}`;
 
         const mainHi = document.getElementById('mainHighScore');
         if (mainHi) mainHi.textContent = fmt(this.highScore);
@@ -890,11 +892,11 @@ class Game {
         const mainMode = document.getElementById('mainSelectedMode');
         if (mainMode) {
             const modeTitles = {
-                classic: '🏆 Classic Survival',
-                timerush: '⏱️ Time Rush (3m)',
-                bossrush: '👾 Boss Rush'
+                classic: '<i class="fa-solid fa-trophy text-gold"></i> Classic Survival',
+                timerush: '<i class="fa-solid fa-stopwatch text-cyan"></i> Time Rush (3m)',
+                bossrush: '<i class="fa-solid fa-skull text-danger"></i> Boss Rush'
             };
-            mainMode.textContent = modeTitles[this.mode] || 'Classic Survival';
+            mainMode.innerHTML = modeTitles[this.mode] || '<i class="fa-solid fa-trophy text-gold"></i> Classic Survival';
         }
 
         const bombBadge = document.getElementById('touchBombCount');
@@ -903,11 +905,11 @@ class Game {
         const lives = document.getElementById('livesContainer');
         if (lives) {
             lives.innerHTML = '';
-            const icon = this.shipType === 'titan' ? '🛡️' : this.shipType === 'quantum' ? '🌀' : '⚡';
+            const iconClass = this.shipType === 'titan' ? 'fa-solid fa-shield-halved text-green' : this.shipType === 'quantum' ? 'fa-solid fa-atom text-purple' : 'fa-solid fa-bolt-lightning text-cyan';
             for (let i = 0; i < this.lives; i++) {
                 const sp = document.createElement('span');
                 sp.className = 'life-icon';
-                sp.textContent = icon;
+                sp.innerHTML = `<i class="${iconClass}"></i>`;
                 lives.appendChild(sp);
             }
         }
@@ -1014,10 +1016,7 @@ class Game {
             const cap = st.charAt(0).toUpperCase() + st.slice(1);
             const card = document.getElementById(`shipCard${cap}`);
             const overlay = document.getElementById(`lockOverlay${cap}`);
-            const tabLock = document.getElementById(`tabLock${cap}`);
             const isUnlocked = this.shop.isShipUnlocked(st);
-
-            if (tabLock) tabLock.style.display = isUnlocked ? 'none' : 'inline';
 
             if (card) {
                 if (isUnlocked) {
@@ -1030,17 +1029,9 @@ class Game {
 
                 if (st === this.shipType) {
                     card.classList.add('selected');
-                    card.classList.add('mobile-active');
                 } else {
                     card.classList.remove('selected');
-                    card.classList.remove('mobile-active');
                 }
-            }
-
-            const tab = document.getElementById(`tab${cap}`);
-            if (tab) {
-                if (this.shipType === st) tab.classList.add('active');
-                else tab.classList.remove('active');
             }
         });
 
@@ -1057,18 +1048,26 @@ class Game {
     _showModal(type) {
         this._hideBossHealthBar();
         const modal = document.getElementById('statusModal');
-        document.getElementById('modalIcon').textContent    = type === 'gameover' ? '💥' : '⏸️';
-        document.getElementById('modalTitle').textContent   = type === 'gameover' ? 'GAME OVER' : 'PAUSED';
+        const iconBox = document.getElementById('modalIconBox');
+        
+        if (iconBox) {
+            iconBox.innerHTML = type === 'gameover' 
+                ? '<i class="fa-solid fa-skull text-danger"></i>' 
+                : '<i class="fa-solid fa-pause text-cyan"></i>';
+        }
+        
+        document.getElementById('modalTitle').textContent = type === 'gameover' ? 'GAME OVER' : 'PAUSED';
         document.getElementById('modalSubtitle').textContent = type === 'gameover'
             ? 'Your starfighter was destroyed in the void.'
             : 'Mission on hold. Resume when ready, Commander.';
-        document.getElementById('resumeBtn').style.display  = type === 'paused' ? 'block' : 'none';
+        
+        document.getElementById('resumeBtn').style.display = type === 'paused' ? 'inline-flex' : 'none';
         document.getElementById('summaryScore').textContent = this.score.toLocaleString();
-        document.getElementById('summaryWave').textContent  = this.wave;
+        document.getElementById('summaryWave').textContent = this.wave;
         document.getElementById('summaryAsteroids').textContent = this.asteroidsDestroyed;
 
         if (type === 'gameover' && this.score >= this.highScore) {
-            document.getElementById('modalSubtitle').textContent = '🏆 NEW HIGH SCORE! Well done, Commander.';
+            document.getElementById('modalSubtitle').innerHTML = '<i class="fa-solid fa-trophy text-gold"></i> NEW HIGH SCORE! Well done, Commander.';
         }
 
         modal.style.display = 'flex';
@@ -1381,7 +1380,7 @@ class Game {
         document.getElementById('soundBtn').addEventListener('click', () => {
             this._triggerHaptic('tap');
             const on = audio.toggleSound();
-            document.getElementById('soundIcon').textContent = on ? '🔊' : '🔇';
+            document.getElementById('soundIcon').innerHTML = on ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
         });
 
         // Touch action buttons

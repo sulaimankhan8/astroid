@@ -125,7 +125,7 @@ export class Shop {
         });
 
         const shopCrystal = document.getElementById('shopCrystalCount');
-        if (shopCrystal) shopCrystal.textContent = `💎 ${crystals}`;
+        if (shopCrystal) shopCrystal.innerHTML = `<i class="fa-solid fa-gem"></i> ${crystals.toLocaleString()}`;
     }
 }
 
