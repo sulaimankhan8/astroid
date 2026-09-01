@@ -40,6 +40,9 @@
         <!-- TOP HUD DISPLAY -->
         <header class="hud-top">
             <div class="hud-group">
+                <button id="hudBackBtn" class="icon-btn btn-hud-back" title="Back to Menu">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
                 <div class="stat-box">
                     <span class="stat-label">SCORE</span>
                     <span class="stat-value" id="scoreDisplay">000,000</span>
@@ -85,6 +88,9 @@
                 <button id="shopBtn" class="icon-btn" title="Upgrade Shop">
                     <i class="fa-solid fa-cart-shopping"></i>
                 </button>
+                <button id="settingsBtn" class="icon-btn" title="Game Settings">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
                 <button id="soundBtn" class="icon-btn" title="Toggle Sound">
                     <span id="soundIcon"><i class="fa-solid fa-volume-high"></i></span>
                 </button>
@@ -100,11 +106,7 @@
                 <div class="game-logo">
                     <span class="logo-badge">CYBER SPACE WARFARE</span>
                     <h1 class="logo-title">ASTEROIDS DELUXE</h1>
-                </div>
-
-                <div class="vault-balance" id="vaultBalanceCard">
-                    <span>Banked Crystal Vault: <strong class="cyan-text" id="vaultCrystalDisplay"><i class="fa-solid fa-gem"></i> 0</strong></span>
-                    <button id="openShopChipBtn" class="vault-shop-chip"><i class="fa-solid fa-cart-shopping"></i> SHOP</button>
+                    <p class="logo-subtitle">Tactical Space Arcade Combat</p>
                 </div>
 
                 <div class="main-menu-stats-badge">
@@ -114,26 +116,39 @@
                     </div>
                     <div class="stat-divider"></div>
                     <div class="mini-stat">
+                        <span class="lbl">CRYSTALS</span>
+                        <span class="val cyan-text" id="vaultCrystalDisplay"><i class="fa-solid fa-gem"></i> 0</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="mini-stat">
                         <span class="lbl">SELECTED MODE</span>
-                        <span class="val cyan-text" id="mainSelectedMode"><i class="fa-solid fa-trophy text-gold"></i> Classic Survival</span>
+                        <span class="val cyan-text" id="mainSelectedMode"><i class="fa-solid fa-trophy text-gold"></i> Survival</span>
                     </div>
                 </div>
 
                 <!-- MAIN MENU ACTION BUTTONS -->
                 <div class="main-menu-actions">
-                    <button id="openHangarBtn" class="btn btn-primary btn-main-play">
-                        <i class="fa-solid fa-rocket"></i> PLAY GAME
+                    <button id="quickStartBtn" class="btn btn-primary btn-main-play">
+                        <i class="fa-solid fa-play"></i> QUICK START
                     </button>
-                    <button id="startShopBtn" class="btn btn-secondary btn-main-shop">
-                        <i class="fa-solid fa-cart-shopping"></i> UPGRADE SHOP
+                    <button id="openHangarBtn" class="btn btn-secondary btn-main-play">
+                        <i class="fa-solid fa-rocket"></i> MISSION HANGAR
                     </button>
-                    <button id="helpBtn" class="btn btn-secondary btn-main-help">
-                        <i class="fa-solid fa-circle-question"></i> HOW TO PLAY
-                    </button>
+                    <div class="main-menu-sub-actions">
+                        <button id="startShopBtn" class="btn btn-secondary btn-main-shop">
+                            <i class="fa-solid fa-cart-shopping"></i> SHOP
+                        </button>
+                        <button id="settingsMenuBtn" class="btn btn-secondary btn-main-settings">
+                            <i class="fa-solid fa-sliders"></i> SETTINGS
+                        </button>
+                        <button id="helpBtn" class="btn btn-secondary btn-main-help">
+                            <i class="fa-solid fa-circle-question"></i> GUIDE
+                        </button>
+                    </div>
                 </div>
 
                 <div class="controls-guide">
-                    <span><i class="fa-solid fa-gamepad"></i> <strong>Controls:</strong> Mobile Thumb Joystick & Action Buttons | <strong>PC:</strong> WASD / Space / Shift</span>
+                    <span><i class="fa-solid fa-gamepad"></i> <strong>Controls:</strong> Mobile Thumb Joystick & Buttons | <strong>PC:</strong> WASD / Mouse Aim / Space</span>
                 </div>
             </div>
         </div>
@@ -367,6 +382,35 @@
             </div>
         </div>
 
+        <!-- GAME SETTINGS MODAL -->
+        <div id="settingsModal" class="overlay-screen">
+            <div class="screen-card settings-card">
+                <div class="drawer-header">
+                    <h2><i class="fa-solid fa-sliders"></i> GAME & CONTROL SETTINGS</h2>
+                    <button id="closeSettingsBtn" class="close-btn">&times;</button>
+                </div>
+                
+                <div class="settings-group">
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label for="sensitivitySlider" class="setting-label">
+                                <i class="fa-solid fa-gauge-high text-cyan"></i> Control Sensitivity
+                            </label>
+                            <p class="setting-desc">Adjust steering & aiming response speed (0.5x – 3.0x)</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="range" id="sensitivitySlider" min="0.5" max="3.0" step="0.1" value="1.0" class="cyber-range" />
+                            <span id="sensitivityVal" class="setting-value-badge">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="saveSettingsBtn" class="btn btn-primary" style="align-self: center; margin-top: 10px;">
+                    <i class="fa-solid fa-check"></i> SAVE & APPLY
+                </button>
+            </div>
+        </div>
+
         <!-- HOW TO PLAY & CONTROLS TUTORIAL MODAL -->
         <div id="helpModal" class="overlay-screen">
             <div class="screen-card help-card">
@@ -406,43 +450,72 @@
             </div>
         </div>
 
-        <!-- PAUSE & GAME OVER MODAL -->
+        <!-- PAUSE MODAL -->
         <div id="statusModal" class="overlay-screen">
             <div class="screen-card modal-card">
-                <div class="modal-icon-badge" id="modalIconBox">
-                    <i class="fa-solid fa-pause" id="modalIconFa"></i>
+                <div class="modal-icon-badge">
+                    <i class="fa-solid fa-pause text-cyan"></i>
                 </div>
-                <h1 class="modal-title" id="modalTitle">GAME OVER</h1>
-                <p class="modal-subtitle" id="modalSubtitle">Your starfighter was destroyed in the deep void.</p>
+                <h1 class="modal-title">GAME PAUSED</h1>
+                <p class="modal-subtitle">Mission on hold. Resume when ready, Commander.</p>
+
+                <div class="modal-button-group">
+                    <button id="resumeBtn" class="btn btn-primary">
+                        <i class="fa-solid fa-play"></i> RESUME MISSION
+                    </button>
+                    <button id="restartBtn" class="btn btn-secondary">
+                        <i class="fa-solid fa-rotate-right"></i> RESTART RUN
+                    </button>
+                    <button id="modalShopBtn" class="btn btn-secondary">
+                        <i class="fa-solid fa-cart-shopping"></i> UPGRADE SHOP
+                    </button>
+                    <button id="hangarBtn" class="btn btn-secondary">
+                        <i class="fa-solid fa-rocket"></i> MISSION HANGAR
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEDICATED GAME OVER SCREEN -->
+        <div id="gameOverModal" class="overlay-screen">
+            <div class="screen-card modal-card game-over-card">
+                <div class="modal-icon-badge game-over-badge" id="goIconBox">
+                    <i class="fa-solid fa-skull text-danger"></i>
+                </div>
+                <h1 class="modal-title game-over-title" id="goTitle">GAME OVER</h1>
+                <p class="modal-subtitle" id="goSubtitle">Your starfighter was destroyed in the deep void.</p>
 
                 <div class="stats-summary-grid">
                     <div class="summary-box">
-                        <span class="summary-num gold-text" id="summaryScore">0</span>
+                        <span class="summary-num gold-text" id="goScore">0</span>
                         <span class="summary-lbl">FINAL SCORE</span>
                     </div>
                     <div class="summary-box">
-                        <span class="summary-num cyan-text" id="summaryWave">1</span>
+                        <span class="summary-num cyan-text" id="goWave">1</span>
                         <span class="summary-lbl">WAVE REACHED</span>
                     </div>
                     <div class="summary-box">
-                        <span class="summary-num purple-text" id="summaryAsteroids">0</span>
-                        <span class="summary-lbl">TARGETS ELIMINATED</span>
+                        <span class="summary-num purple-text" id="goTargets">0</span>
+                        <span class="summary-lbl">TARGETS DESTROYED</span>
+                    </div>
+                    <div class="summary-box">
+                        <span class="summary-num cyan-text" id="goCrystals"><i class="fa-solid fa-gem"></i> 0</span>
+                        <span class="summary-lbl">RUN CRYSTALS</span>
                     </div>
                 </div>
 
                 <div class="modal-button-group">
-                    <button id="resumeBtn" class="btn btn-primary" style="display: none;">
-                        <i class="fa-solid fa-play"></i> Resume
+                    <button id="goRestartBtn" class="btn btn-primary btn-game-over-primary">
+                        <i class="fa-solid fa-rotate-right"></i> PLAY AGAIN
                     </button>
-                    <button id="restartBtn" class="btn btn-primary">
-                        <i class="fa-solid fa-rotate-right"></i> Play Again
-                    </button>
-                    <button id="modalShopBtn" class="btn btn-secondary">
-                        <i class="fa-solid fa-cart-shopping"></i> Upgrade Shop
-                    </button>
-                    <button id="hangarBtn" class="btn btn-secondary">
-                        <i class="fa-solid fa-rocket"></i> Hangar
-                    </button>
+                    <div class="game-over-sub-actions">
+                        <button id="goShopBtn" class="btn btn-secondary">
+                            <i class="fa-solid fa-cart-shopping"></i> UPGRADE SHOP
+                        </button>
+                        <button id="goHangarBtn" class="btn btn-secondary">
+                            <i class="fa-solid fa-rocket"></i> HANGAR
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

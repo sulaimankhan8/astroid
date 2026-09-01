@@ -33,6 +33,7 @@ class Game {
         this.comboTimer = 0;
         this.highScore = parseInt(localStorage.getItem('asteroidsHiScore') || '0');
         this.totalCrystals = parseInt(localStorage.getItem('asteroidsTotalCrystals') || '0');
+        this.sensitivity = parseFloat(localStorage.getItem('asteroidsSensitivity') || '1.0');
         this.wave = 1;
         this.lives = 3;
         this.crystalCount = 0;
@@ -66,6 +67,7 @@ class Game {
         this._bindUI();
         this._updateShipCardsUI();
         this._hideBossHealthBar();
+        this._updateHUDVisibility();
         this._loop();
     }
 
@@ -118,6 +120,16 @@ class Game {
         if (bc) bc.style.display = 'none';
     }
 
+    _updateHUDVisibility() {
+        const hud = document.querySelector('.hud-top');
+        if (!hud) return;
+        if (this.state === 'menu') {
+            hud.classList.add('hidden');
+        } else {
+            hud.classList.remove('hidden');
+        }
+    }
+
     bankCrystals(amount) {
         this.totalCrystals += amount;
         localStorage.setItem('asteroidsTotalCrystals', String(this.totalCrystals));
@@ -157,12 +169,17 @@ class Game {
         this.aimWithMouse = false;
 
         if (this.mode === GAME_MODES.BOSSRUSH) {
+            // Apply Boss Rush Agility Buff for responsive shooter controls against fast boss targets
+            this.ship.rotationSpeed *= 1.45;
+            this.ship.thrustPower *= 1.3;
+            this.ship.maxSpeed += 2.5;
             this._announceWave('👾 BOSS RUSH — WAVE 1', () => this._spawnBoss());
         } else {
             this._announceWave(`WAVE 1`, () => this._spawnWave(1));
         }
 
         this.state = 'playing';
+        this._updateHUDVisibility();
         this._updateHUD();
     }
 
@@ -270,17 +287,47 @@ class Game {
     _gameOver() {
         this.state = 'gameover';
         this._hideBossHealthBar();
-        if (this.score > this.highScore) {
+        const isHiScore = this.score > this.highScore;
+        if (isHiScore) {
             this.highScore = this.score;
             localStorage.setItem('asteroidsHiScore', String(this.highScore));
         }
-        this._showModal('gameover');
+
+        const goModal = document.getElementById('gameOverModal');
+        const goScore = document.getElementById('goScore');
+        const goWave = document.getElementById('goWave');
+        const goTargets = document.getElementById('goTargets');
+        const goCrystals = document.getElementById('goCrystals');
+        const goSubtitle = document.getElementById('goSubtitle');
+        const goIconBox = document.getElementById('goIconBox');
+
+        if (goScore) goScore.textContent = this.score.toLocaleString();
+        if (goWave) goWave.textContent = this.wave;
+        if (goTargets) goTargets.textContent = this.asteroidsDestroyed;
+        if (goCrystals) goCrystals.innerHTML = `<i class="fa-solid fa-gem cyan-text"></i> ${this.crystalCount}`;
+
+        if (isHiScore && goSubtitle) {
+            goSubtitle.innerHTML = '<span class="text-gold"><i class="fa-solid fa-trophy"></i> NEW HIGH SCORE! Outstanding performance, Commander.</span>';
+            if (goIconBox) goIconBox.innerHTML = '<i class="fa-solid fa-trophy text-gold"></i>';
+        } else if (goSubtitle) {
+            goSubtitle.textContent = 'Your starfighter was destroyed in the deep void.';
+            if (goIconBox) goIconBox.innerHTML = '<i class="fa-solid fa-skull text-danger"></i>';
+        }
+
+        if (goModal) {
+            goModal.style.display = 'flex';
+            goModal.classList.add('active');
+        }
     }
 
     pause() {
         if (this.state !== 'playing') return;
         this.state = 'paused';
-        this._showModal('paused');
+        const modal = document.getElementById('statusModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.classList.add('active');
+        }
     }
 
     resume() {
@@ -328,15 +375,15 @@ class Game {
         const rotLeft  = this.keys['ArrowLeft']  || this.keys['KeyA'];
         const rotRight = this.keys['ArrowRight'] || this.keys['KeyD'];
 
-        if (rotLeft)  this.ship.rotate(-1);
-        if (rotRight) this.ship.rotate(1);
+        if (rotLeft)  this.ship.rotate(-1 * this.sensitivity);
+        if (rotRight) this.ship.rotate(1 * this.sensitivity);
 
         // ---- Mouse Aim (smooth steer toward cursor, only when NOT rotating with keys) ----
         if (this.aimWithMouse && !rotLeft && !rotRight) {
             const dx = this.mouse.x - this.ship.x;
             const dy = this.mouse.y - this.ship.y;
             const target = Math.atan2(dy, dx);
-            this.ship.steerToward(target, 0.15);
+            this.ship.steerToward(target, 0.18 * this.sensitivity);
         }
 
         // ---- Thrust ----
@@ -354,7 +401,7 @@ class Game {
             const mag = Math.hypot(this.touchJoystick.dx, this.touchJoystick.dy);
             if (mag > 8) {
                 const jAngle = Math.atan2(this.touchJoystick.dy, this.touchJoystick.dx);
-                this.ship.steerToward(jAngle, 0.15);
+                this.ship.steerToward(jAngle, 0.18 * this.sensitivity);
                 this.ship.thrust();
                 this.ship.isThrusting = true;
                 this.particles.spawnThrusterTrail(this.ship.x, this.ship.y, this.ship.angle, '#38bdf8');
@@ -562,6 +609,14 @@ class Game {
 
     _fireBullet() {
         if (!this.ship) return;
+
+        // Instant cursor tracking at the exact frame of firing when mouse aiming
+        if (this.aimWithMouse && !this.keys['ArrowLeft'] && !this.keys['KeyA'] && !this.keys['ArrowRight'] && !this.keys['KeyD']) {
+            const dx = this.mouse.x - this.ship.x;
+            const dy = this.mouse.y - this.ship.y;
+            this.ship.angle = Math.atan2(dy, dx);
+        }
+
         const a = this.ship.angle;
         const tip = {
             x: this.ship.x + Math.cos(a) * this.ship.radius,
@@ -723,25 +778,48 @@ class Game {
         const s = this.ship;
         const startX = s.x + Math.cos(s.angle) * (s.radius + 6);
         const startY = s.y + Math.sin(s.angle) * (s.radius + 6);
-        const aimLength = 130;
-        const endX = s.x + Math.cos(s.angle) * aimLength;
-        const endY = s.y + Math.sin(s.angle) * aimLength;
 
         ctx.save();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
 
-        ctx.fillStyle = '#38bdf8';
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(endX, endY, 3, 0, Math.PI * 2);
-        ctx.fill();
+        if (this.boss) {
+            // Tactical Lock-On line directly tracking Boss Core in Boss Rush Mode
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+            ctx.shadowColor = '#ef4444';
+            ctx.shadowBlur = 12;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(this.boss.x, this.boss.y);
+            ctx.stroke();
+
+            // Lock-on target reticle
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(this.boss.x, this.boss.y, this.boss.radius + 8, 0, Math.PI * 2);
+            ctx.stroke();
+        } else {
+            const aimLength = 160;
+            const endX = s.x + Math.cos(s.angle) * aimLength;
+            const endY = s.y + Math.sin(s.angle) * aimLength;
+
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(endX, endY, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         ctx.restore();
     }
 
@@ -1193,6 +1271,8 @@ class Game {
         // MAIN MENU -> HANGAR NAVIGATION
         const openHangar = () => {
             this._triggerHaptic('tap');
+            this.state = 'menu';
+            this._updateHUDVisibility();
             const startScreen = document.getElementById('startScreen');
             const hangarScreen = document.getElementById('hangarScreen');
             if (startScreen) {
@@ -1208,6 +1288,8 @@ class Game {
 
         const closeHangar = () => {
             this._triggerHaptic('tap');
+            this.state = 'menu';
+            this._updateHUDVisibility();
             const startScreen = document.getElementById('startScreen');
             const hangarScreen = document.getElementById('hangarScreen');
             if (hangarScreen) {
@@ -1220,6 +1302,29 @@ class Game {
             }
             this._updateHUD();
         };
+
+        // QUICK START (Direct Play from Start Screen)
+        document.getElementById('quickStartBtn')?.addEventListener('click', () => {
+            this._triggerHaptic('tap');
+            const startScreen = document.getElementById('startScreen');
+            if (startScreen) {
+                startScreen.style.display = 'none';
+                startScreen.classList.remove('active');
+            }
+            this.startGame();
+        });
+
+        // TOP HUD BACK BUTTON (Return from Shooter Gameplay to Menu/Hangar)
+        document.getElementById('hudBackBtn')?.addEventListener('click', () => {
+            this._triggerHaptic('tap');
+            this._hideBossHealthBar();
+            const statusModal = document.getElementById('statusModal');
+            if (statusModal) {
+                statusModal.style.display = 'none';
+                statusModal.classList.remove('active');
+            }
+            openHangar();
+        });
 
         document.getElementById('openHangarBtn')?.addEventListener('click', openHangar);
         document.getElementById('hangarBackBtn')?.addEventListener('click', closeHangar);
@@ -1275,6 +1380,36 @@ class Game {
                 }
             });
         });
+
+        // Settings Modal & Sensitivity Controls
+        const slider = document.getElementById('sensitivitySlider');
+        const valBadge = document.getElementById('sensitivityVal');
+        if (slider && valBadge) {
+            slider.value = String(this.sensitivity);
+            valBadge.textContent = `${this.sensitivity.toFixed(1)}x`;
+
+            slider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                this.sensitivity = val;
+                valBadge.textContent = `${val.toFixed(1)}x`;
+                localStorage.setItem('asteroidsSensitivity', String(val));
+            });
+        }
+
+        const toggleSettings = (show) => {
+            this._triggerHaptic('tap');
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.style.display = show ? 'flex' : 'none';
+                if (show) modal.classList.add('active');
+                else modal.classList.remove('active');
+            }
+        };
+
+        document.getElementById('settingsBtn')?.addEventListener('click', () => toggleSettings(true));
+        document.getElementById('settingsMenuBtn')?.addEventListener('click', () => toggleSettings(true));
+        document.getElementById('closeSettingsBtn')?.addEventListener('click', () => toggleSettings(false));
+        document.getElementById('saveSettingsBtn')?.addEventListener('click', () => toggleSettings(false));
 
         // Help Modal
         const toggleHelp = (show) => {
@@ -1334,8 +1469,9 @@ class Game {
             const m = document.getElementById('statusModal');
             m.style.display = 'none';
             m.classList.remove('active');
-            openHangar();
             this.state = 'menu';
+            this._updateHUDVisibility();
+            openHangar();
             this.ship = null;
         });
 
@@ -1351,6 +1487,37 @@ class Game {
         document.getElementById('startShopBtn')?.addEventListener('click', openShop);
         document.getElementById('openShopChipBtn')?.addEventListener('click', openShop);
         document.getElementById('modalShopBtn')?.addEventListener('click', openShop);
+        document.getElementById('goShopBtn')?.addEventListener('click', () => {
+            const goModal = document.getElementById('gameOverModal');
+            if (goModal) {
+                goModal.style.display = 'none';
+                goModal.classList.remove('active');
+            }
+            openShop();
+        });
+
+        // Game Over Modal Action Buttons
+        document.getElementById('goRestartBtn')?.addEventListener('click', () => {
+            this._triggerHaptic('tap');
+            const goModal = document.getElementById('gameOverModal');
+            if (goModal) {
+                goModal.style.display = 'none';
+                goModal.classList.remove('active');
+            }
+            this.startGame();
+        });
+
+        document.getElementById('goHangarBtn')?.addEventListener('click', () => {
+            this._triggerHaptic('tap');
+            const goModal = document.getElementById('gameOverModal');
+            if (goModal) {
+                goModal.style.display = 'none';
+                goModal.classList.remove('active');
+            }
+            this.state = 'menu';
+            this._updateHUDVisibility();
+            openHangar();
+        });
 
         document.getElementById('closeShopBtn')?.addEventListener('click', () => {
             this._triggerHaptic('tap');
@@ -1516,7 +1683,9 @@ class Game {
     _circlesCollide(a, b) {
         const dx = a.x - b.x;
         const dy = a.y - b.y;
-        return Math.hypot(dx, dy) < (a.radius + b.radius) * 0.82;
+        const isBoss = (a instanceof BossMothership || b instanceof BossMothership);
+        const factor = isBoss ? 1.05 : 0.96;
+        return Math.hypot(dx, dy) < (a.radius + b.radius) * factor;
     }
 
     _dist(x1, y1, x2, y2) {

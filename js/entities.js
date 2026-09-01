@@ -67,7 +67,7 @@ export class Ship {
     }
 
     // Smoothly steer toward a target angle (for mouse aim)
-    steerToward(targetAngle, lerpFactor = 0.18) {
+    steerToward(targetAngle, lerpFactor = 0.35) {
         let diff = targetAngle - this.angle;
         // Normalize to [-PI, PI]
         while (diff > Math.PI) diff -= Math.PI * 2;
@@ -180,12 +180,12 @@ export class Bullet {
     constructor(x, y, angle, power = 1, isEnemy = false) {
         this.x = x;
         this.y = y;
-        const speed = isEnemy ? 5.5 : 13;
+        const speed = isEnemy ? 6 : 16;
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
-        this.radius = isEnemy ? 4 : 3.5;
+        this.radius = isEnemy ? 4.5 : 4.5;
         this.power = power;
-        this.life = isEnemy ? 90 : 70; // frames
+        this.life = isEnemy ? 90 : 75; // frames
         this.isEnemy = isEnemy;
         this.maxLife = this.life;
     }
