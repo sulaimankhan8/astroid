@@ -67,30 +67,33 @@ button {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Allow Touch Scrolling & Dragging on all UI overlays, cards, shop drawers, and buttons */
+/* Allow Touch Scrolling & Dragging on all UI overlays, cards, settings, drawers, and grids */
 .overlay-screen,
+.overlay-screen *,
 .overlay-drawer,
+.overlay-drawer *,
 .drawer-content,
 .screen-card,
 .modal-card,
 .help-card,
+.settings-card,
+.game-over-card,
 .shop-items-grid,
-.mode-selector,
-.mode-tab,
-.ship-card,
-.vault-balance,
-.btn,
-.close-btn,
-.icon-btn,
-.stat-box,
-.hud-top,
+.mode-cards-grid,
+.mode-card,
+.ship-details-box,
+.settings-group,
+.setting-row,
 .help-grid,
-.help-box {
+.help-box,
+.stats-summary-grid,
+.summary-box {
     touch-action: pan-y !important;
     -webkit-overflow-scrolling: touch;
 }
 
-.ship-select-grid {
+.ship-select-grid,
+.ship-select-grid * {
     touch-action: pan-x pan-y !important;
     -webkit-overflow-scrolling: touch;
 }
@@ -1303,17 +1306,26 @@ body, html {
     position: fixed;
     top: 0;
     right: -420px;
-    width: min(400px, 90vw);
+    width: min(400px, 92vw);
     height: 100vh;
     background: var(--bg-dark);
     border-left: 1px solid var(--surface-border);
     box-shadow: -10px 0 40px rgba(0, 0, 0, 0.8);
     z-index: 120;
     transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 24px;
+    padding: 20px 16px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+.drawer-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
 }
 
 .overlay-drawer.active {
@@ -1324,13 +1336,14 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 16px;
+    padding-bottom: 12px;
     border-bottom: 1px solid var(--surface-border);
+    flex-shrink: 0;
 }
 
 .drawer-header h2 {
     font-family: var(--font-heading);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
     color: var(--neon-cyan);
     display: flex;
@@ -1352,10 +1365,11 @@ body, html {
 }
 
 .shop-balance {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
-    padding: 16px 0;
+    padding: 12px 0;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .cyan-text {
@@ -1373,19 +1387,25 @@ body, html {
 .shop-items-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
+    gap: 10px;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: contain;
     flex: 1;
+    padding-bottom: 16px;
 }
 
 .shop-item {
     background: rgba(13, 18, 36, 0.7);
     border: 1px solid var(--surface-border);
     border-radius: 14px;
-    padding: 14px;
+    padding: 12px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    touch-action: pan-y !important;
+    flex-shrink: 0;
 }
 
 .item-icon-box {
@@ -1838,12 +1858,87 @@ body.is-mobile .stat-box {
     display: none !important;
 }
 
+body.is-mobile #hudBackBtn {
+    display: flex !important;
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+    margin-right: 6px;
+    z-index: 75;
+    pointer-events: auto !important;
+    touch-action: auto !important;
+}
+
 body.is-mobile #shopBtn {
     display: none !important;
 }
 
+body.is-mobile #settingsBtn {
+    display: flex !important;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+}
+
 body.is-mobile .hud-top {
     padding: 6px 10px;
+}
+
+@media (max-width: 768px), (max-height: 550px) {
+    .settings-card {
+        padding: 14px 18px;
+        max-width: 440px;
+    }
+    .setting-row {
+        padding: 12px;
+        gap: 8px;
+    }
+    .setting-label {
+        font-size: 12px;
+    }
+    .setting-desc {
+        font-size: 9.5px;
+    }
+    .cyber-range::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
+    }
+
+    .game-over-card {
+        max-width: 440px;
+        padding: 12px 16px;
+        gap: 8px;
+    }
+    .game-over-badge {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 18px !important;
+    }
+    .game-over-title {
+        font-size: 22px !important;
+    }
+    .stats-summary-grid {
+        gap: 6px;
+        margin: 2px 0;
+    }
+    .summary-box {
+        padding: 6px 4px;
+        gap: 2px;
+    }
+    .summary-num {
+        font-size: 14px;
+    }
+    .summary-lbl {
+        font-size: 8px;
+    }
+    .btn-game-over-primary {
+        padding: 9px;
+        font-size: 12px;
+    }
+    .game-over-sub-actions .btn {
+        padding: 7px;
+        font-size: 10px;
+    }
 }
 
 

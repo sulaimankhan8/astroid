@@ -176,11 +176,13 @@ export class Ship {
     }
 }
 
+const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 550 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+
 export class Bullet {
     constructor(x, y, angle, power = 1, isEnemy = false) {
         this.x = x;
         this.y = y;
-        const speed = isEnemy ? 6 : 16;
+        const speed = isEnemy ? (isMobileDevice ? 4.2 : 6.0) : 16;
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
         this.radius = isEnemy ? 4.5 : 4.5;
@@ -249,9 +251,10 @@ export class Asteroid {
             this.points = 400;
         }
 
-        // Progressively faster per wave
-        const baseSpeed = (Math.random() * 1.2 + 0.7) * (size === 'small' ? 1.8 : 1);
-        const waveBonus = Math.min((waveFactor - 1) * 0.12, 1.5);
+        // Progressively faster per wave (tuned 0.75x for mobile touchscreen comfort)
+        const mobileScale = isMobileDevice ? 0.75 : 1.0;
+        const baseSpeed = (Math.random() * 1.2 + 0.7) * (size === 'small' ? 1.7 : 1) * mobileScale;
+        const waveBonus = Math.min((waveFactor - 1) * 0.1, 1.2) * mobileScale;
         const speed = baseSpeed + waveBonus;
 
         const angle = Math.random() * Math.PI * 2;

@@ -401,7 +401,7 @@ class Game {
             const mag = Math.hypot(this.touchJoystick.dx, this.touchJoystick.dy);
             if (mag > 8) {
                 const jAngle = Math.atan2(this.touchJoystick.dy, this.touchJoystick.dx);
-                this.ship.steerToward(jAngle, 0.18 * this.sensitivity);
+                this.ship.steerToward(jAngle, 0.45 * this.sensitivity);
                 this.ship.thrust();
                 this.ship.isThrusting = true;
                 this.particles.spawnThrusterTrail(this.ship.x, this.ship.y, this.ship.angle, '#38bdf8');
@@ -615,6 +615,12 @@ class Game {
             const dx = this.mouse.x - this.ship.x;
             const dy = this.mouse.y - this.ship.y;
             this.ship.angle = Math.atan2(dy, dx);
+        } else if (this.touchJoystick.active) {
+            // Mobile joystick instant angle alignment on fire
+            const mag = Math.hypot(this.touchJoystick.dx, this.touchJoystick.dy);
+            if (mag > 8) {
+                this.ship.angle = Math.atan2(this.touchJoystick.dy, this.touchJoystick.dx);
+            }
         }
 
         const a = this.ship.angle;
@@ -705,6 +711,16 @@ class Game {
             bonusScore += 300;
             this.particles.spawnExplosion(u.x, u.y, '#ff2a85', 20);
         });
+        if (this.boss) {
+            this.boss.hp -= 20;
+            bonusScore += 1000;
+            this.particles.spawnExplosion(this.boss.x, this.boss.y, '#ef4444', 35);
+            const fill = document.getElementById('bossHealthFill');
+            if (fill) {
+                const pct = Math.max(0, (this.boss.hp / this.boss.maxHp) * 100);
+                fill.style.width = `${pct}%`;
+            }
+        }
         this.score += bonusScore;
         this.asteroids = [];
         this.ufos = [];
@@ -1314,8 +1330,9 @@ class Game {
             this.startGame();
         });
 
-        // TOP HUD BACK BUTTON (Return from Shooter Gameplay to Menu/Hangar)
-        document.getElementById('hudBackBtn')?.addEventListener('click', () => {
+        // TOP HUD BACK BUTTON (Return from Shooter Gameplay to Menu/Hangar on Laptop & Mobile)
+        const triggerBackNav = (e) => {
+            if (e) e.stopPropagation();
             this._triggerHaptic('tap');
             this._hideBossHealthBar();
             const statusModal = document.getElementById('statusModal');
@@ -1324,7 +1341,16 @@ class Game {
                 statusModal.classList.remove('active');
             }
             openHangar();
-        });
+        };
+
+        const hudBack = document.getElementById('hudBackBtn');
+        if (hudBack) {
+            hudBack.addEventListener('click', triggerBackNav);
+            hudBack.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                triggerBackNav(e);
+            }, { passive: false });
+        }
 
         document.getElementById('openHangarBtn')?.addEventListener('click', openHangar);
         document.getElementById('hangarBackBtn')?.addEventListener('click', closeHangar);
@@ -1393,6 +1419,7 @@ class Game {
                 this.sensitivity = val;
                 valBadge.textContent = `${val.toFixed(1)}x`;
                 localStorage.setItem('asteroidsSensitivity', String(val));
+                this._triggerHaptic('tap');
             });
         }
 
@@ -1690,6 +1717,24 @@ class Game {
 
     _dist(x1, y1, x2, y2) {
         return Math.hypot(x2 - x1, y2 - y1);
+    }
+
+    _getNearestThreat() {
+        if (!this.ship) return null;
+        let nearest = null;
+        let minDist = Infinity;
+
+        const candidates = [...this.asteroids, ...this.ufos];
+        if (this.boss) candidates.push(this.boss);
+
+        candidates.forEach(t => {
+            const d = this._dist(this.ship.x, this.ship.y, t.x, t.y);
+            if (d < minDist) {
+                minDist = d;
+                nearest = t;
+            }
+        });
+        return nearest;
     }
 }
 
