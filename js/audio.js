@@ -29,7 +29,7 @@ class SoundEngine {
         this.pingPongFeedbackGain = null;
         this.delaySendGain = null;
 
-        // Background Music Sequencer State
+        // Background Music Sequencer State & MP3 BGM
         this.currentTrack = 'none'; // 'none' | 'menu' | 'combat' | 'boss' | 'gameover'
         this.isPlayingMusic = false;
         this.bpm = 120;
@@ -38,6 +38,12 @@ class SoundEngine {
         this.schedulerTimer = null;
         this.lookahead = 25.0; // ms
         this.scheduleAheadTime = 0.18; // s
+
+        // MP3 BGM Track Configuration & Loop State
+        this.bgmAudio = null;
+        this.bgmSourceNode = null;
+        this.bgmConnectedToWebAudio = false;
+        this.bgmTrackUrl = 'public/luxaeterna2026-vast-liminal-void-563751.mp3';
 
         // Cosmic Drone Generator Nodes
         this.droneGain = null;
@@ -274,6 +280,39 @@ class SoundEngine {
     }
 
     // =========================================================================
+    // MP3 BGM SETUP & LOOPING ENGINE
+    // =========================================================================
+
+    _setupBgmAudio() {
+        if (!this.bgmAudio) {
+            this.bgmAudio = new Audio(this.bgmTrackUrl);
+            this.bgmAudio.loop = true;
+            this.bgmAudio.preload = 'auto';
+            this.bgmAudio.volume = this.enabled ? this.musicVolume : 0;
+
+            // Extra safeguard for continuous gapless looping
+            this.bgmAudio.addEventListener('ended', () => {
+                if (this.isPlayingMusic && this.enabled) {
+                    this.bgmAudio.currentTime = 0;
+                    this.bgmAudio.play().catch(() => {});
+                }
+            });
+        }
+
+        if (this.ctx && !this.bgmSourceNode && this.musicGain) {
+            try {
+                this.bgmSourceNode = this.ctx.createMediaElementSource(this.bgmAudio);
+                this.bgmSourceNode.connect(this.musicGain);
+                this.bgmConnectedToWebAudio = true;
+            } catch (e) {
+                // Browser origin restriction fallback: direct HTML5 Audio volume control
+                this.bgmConnectedToWebAudio = false;
+                this.bgmAudio.volume = this.enabled ? this.musicVolume : 0;
+            }
+        }
+    }
+
+    // =========================================================================
     // VOLUME & SETTINGS CONTROLS
     // =========================================================================
 
@@ -291,6 +330,9 @@ class SoundEngine {
         if (this.ctx && this.musicGain) {
             this.musicGain.gain.setTargetAtTime(this.musicVolume, this.ctx.currentTime, 0.03);
         }
+        if (this.bgmAudio && !this.bgmConnectedToWebAudio) {
+            this.bgmAudio.volume = this.enabled ? this.musicVolume : 0;
+        }
     }
 
     setCosmicTheme(theme) {
@@ -305,102 +347,70 @@ class SoundEngine {
         if (this.ctx && this.masterGain) {
             this.masterGain.gain.setTargetAtTime(this.enabled ? 1.0 : 0.0, this.ctx.currentTime, 0.04);
             if (this.enabled && this.ctx.state === 'suspended') {
-                this.ctx.resume();
+                this.ctx.resume().catch(() => {});
+            }
+        }
+        if (this.bgmAudio) {
+            if (!this.bgmConnectedToWebAudio) {
+                this.bgmAudio.volume = this.enabled ? this.musicVolume : 0;
+            }
+            if (!this.enabled) {
+                this.bgmAudio.pause();
+            } else if (this.isPlayingMusic && this.bgmAudio.paused) {
+                this.bgmAudio.play().catch(() => {});
             }
         }
         return this.enabled;
     }
 
     // =========================================================================
-    // PROCEDURAL MUSIC PLAYBACK & SCHEDULING
+    // MUSIC PLAYBACK (MP3 LOOPING BGM)
     // =========================================================================
 
-    playMusic(trackName) {
-        if (!this.initialized) {
-            this.currentTrack = trackName;
-            return;
-        }
-        if (this.ctx.state === 'suspended') {
-            this.ctx.resume();
-        }
-
-        if (this.currentTrack === trackName && this.isPlayingMusic) return;
-
+    playMusic(trackName = 'combat') {
+        this._setupBgmAudio();
         this.currentTrack = trackName;
         this.isPlayingMusic = (trackName !== 'none');
-        this.currentStep = 0;
-        this.nextNoteTime = this.ctx.currentTime + 0.05;
 
-        // Adjust tempo, filter cutoff, and drone intensity dynamically per track
-        switch (trackName) {
-            case 'menu':
-                this.bpm = 92;
-                if (this.musicFilter) this.musicFilter.frequency.setTargetAtTime(10500, this.ctx.currentTime, 0.25);
-                if (this.droneGain) this.droneGain.gain.setTargetAtTime(0.08, this.ctx.currentTime, 0.3);
-                break;
-            case 'combat':
-                this.bpm = 128;
-                if (this.musicFilter) this.musicFilter.frequency.setTargetAtTime(15000, this.ctx.currentTime, 0.2);
-                if (this.droneGain) this.droneGain.gain.setTargetAtTime(0.05, this.ctx.currentTime, 0.3);
-                break;
-            case 'boss':
-                this.bpm = 144;
-                if (this.musicFilter) this.musicFilter.frequency.setTargetAtTime(16500, this.ctx.currentTime, 0.2);
-                if (this.droneGain) this.droneGain.gain.setTargetAtTime(0.09, this.ctx.currentTime, 0.3);
-                break;
-            case 'gameover':
-                this.bpm = 72;
-                if (this.musicFilter) this.musicFilter.frequency.setTargetAtTime(4500, this.ctx.currentTime, 0.5);
-                if (this.droneGain) this.droneGain.gain.setTargetAtTime(0.12, this.ctx.currentTime, 0.5);
-                break;
-            default:
-                this.isPlayingMusic = false;
-                break;
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+        }
+
+        if (this.isPlayingMusic && this.bgmAudio && this.enabled) {
+            if (!this.bgmConnectedToWebAudio) {
+                this.bgmAudio.volume = this.musicVolume;
+            }
+            if (this.bgmAudio.paused) {
+                const p = this.bgmAudio.play();
+                if (p !== undefined) {
+                    p.catch(() => {
+                        // Will trigger on first user gesture automatically
+                    });
+                }
+            }
         }
     }
 
     stopMusic() {
         this.isPlayingMusic = false;
         this.currentTrack = 'none';
+        if (this.bgmAudio) {
+            this.bgmAudio.pause();
+        }
     }
 
     setMuffled(isMuffled) {
         if (!this.ctx || !this.musicFilter) return;
-        const targetFreq = isMuffled ? 650 : (this.currentTrack === 'boss' ? 16500 : 13500);
+        const targetFreq = isMuffled ? 850 : 15000;
         this.musicFilter.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.18);
     }
 
     _startMusicScheduler() {
-        if (this.schedulerTimer) clearInterval(this.schedulerTimer);
-        this.schedulerTimer = setInterval(() => {
-            if (!this.initialized || !this.ctx || !this.isPlayingMusic) return;
-            while (this.nextNoteTime < this.ctx.currentTime + this.scheduleAheadTime) {
-                this._scheduleStep(this.currentStep, this.nextNoteTime);
-                this._advanceStep();
-            }
-        }, this.lookahead);
-    }
-
-    _advanceStep() {
-        const secondsPerBeat = 60.0 / this.bpm;
-        const stepTime = 0.25 * secondsPerBeat; // 16th note step
-        this.nextNoteTime += stepTime;
-        this.currentStep = (this.currentStep + 1) % 64; // Rich 4-bar 64-step loop
+        // Kept for backward compatibility
     }
 
     _scheduleStep(step, time) {
-        if (!this.ctx || this.musicVolume <= 0.001) return;
-
-        const track = this.currentTrack;
-        if (track === 'combat') {
-            this._stepCombatTrack(step, time);
-        } else if (track === 'boss') {
-            this._stepBossTrack(step, time);
-        } else if (track === 'menu') {
-            this._stepMenuTrack(step, time);
-        } else if (track === 'gameover') {
-            this._stepGameOverTrack(step, time);
-        }
+        // Procedural music retired in favor of the public MP3 looping soundtrack
     }
 
     // =========================================================================
@@ -1120,12 +1130,16 @@ class SoundEngine {
 
 export const audio = new SoundEngine();
 
-// Auto unlock audio on any user gesture
+// Auto unlock audio and trigger looping BGM on any user gesture
 const unlockAudio = () => {
     if (!audio.initialized) {
         audio.init();
     } else if (audio.ctx && audio.ctx.state === 'suspended') {
-        audio.ctx.resume();
+        audio.ctx.resume().catch(() => {});
+    }
+
+    if (audio.bgmAudio && audio.isPlayingMusic && audio.bgmAudio.paused && audio.enabled) {
+        audio.bgmAudio.play().catch(() => {});
     }
 };
 
