@@ -184,15 +184,16 @@ export class Ship {
 const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 550 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
 
 export class Bullet {
-    constructor(x, y, angle, power = 1, isEnemy = false) {
+    constructor(x, y, angle, power = 1, isEnemy = false, customSpeed = null) {
         this.x = x;
         this.y = y;
-        const speed = isEnemy ? (isMobileDevice ? 4.2 : 6.0) : 16;
+        const defaultSpeed = isEnemy ? (isMobileDevice ? 2.6 : 4.6) : 16;
+        const speed = customSpeed !== null ? customSpeed : defaultSpeed;
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
         this.radius = isEnemy ? 4.5 : 4.5;
         this.power = power;
-        this.life = isEnemy ? 90 : 75; // frames
+        this.life = isEnemy ? 95 : 75; // frames
         this.isEnemy = isEnemy;
         this.maxLife = this.life;
     }
@@ -412,7 +413,8 @@ export class BossMothership {
     }
 
     canShoot() {
-        const interval = this.phase === 2 ? 45 : 75;
+        // Decreased attack speed: gives player ample time to maneuver and counter-attack
+        const interval = this.phase === 2 ? 75 : 120;
         if (this.shootTimer >= interval) {
             this.shootTimer = 0;
             return true;
