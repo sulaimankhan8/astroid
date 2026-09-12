@@ -386,21 +386,64 @@
         <div id="settingsModal" class="overlay-screen">
             <div class="screen-card settings-card">
                 <div class="drawer-header">
-                    <h2><i class="fa-solid fa-sliders"></i> GAME & CONTROL SETTINGS</h2>
+                    <h2><i class="fa-solid fa-sliders"></i> GAME & AUDIO SETTINGS</h2>
                     <button id="closeSettingsBtn" class="close-btn">&times;</button>
                 </div>
                 
                 <div class="settings-group">
+                    <!-- Ship Movement / Thruster Speed Slider -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label for="speedSlider" class="setting-label">
+                                <i class="fa-solid fa-rocket text-pink"></i> Thruster / Ship Speed
+                            </label>
+                            <p class="setting-desc">Adjust starfighter propulsion & max velocity (0.4x – 1.6x)</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="range" id="speedSlider" min="0.4" max="1.6" step="0.05" value="1.0" class="cyber-range" />
+                            <span id="speedVal" class="setting-value-badge">1.0x</span>
+                        </div>
+                    </div>
+
+                    <!-- Control Sensitivity Slider -->
                     <div class="setting-row">
                         <div class="setting-info">
                             <label for="sensitivitySlider" class="setting-label">
-                                <i class="fa-solid fa-gauge-high text-cyan"></i> Control Sensitivity
+                                <i class="fa-solid fa-gauge-high text-cyan"></i> Steering Sensitivity
                             </label>
                             <p class="setting-desc">Adjust steering & aiming response speed (0.5x – 3.0x)</p>
                         </div>
                         <div class="setting-control">
                             <input type="range" id="sensitivitySlider" min="0.5" max="3.0" step="0.1" value="1.0" class="cyber-range" />
                             <span id="sensitivityVal" class="setting-value-badge">1.0x</span>
+                        </div>
+                    </div>
+
+                    <!-- Background Music Volume Slider -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label for="musicVolumeSlider" class="setting-label">
+                                <i class="fa-solid fa-music text-purple"></i> Music Volume
+                            </label>
+                            <p class="setting-desc">Cyber synthesizer soundtrack volume (0% – 100%)</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="range" id="musicVolumeSlider" min="0" max="1" step="0.05" value="0.7" class="cyber-range" />
+                            <span id="musicVolumeVal" class="setting-value-badge">70%</span>
+                        </div>
+                    </div>
+
+                    <!-- SFX Volume Slider -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label for="sfxVolumeSlider" class="setting-label">
+                                <i class="fa-solid fa-volume-high text-green"></i> Sound Effects (SFX) Volume
+                            </label>
+                            <p class="setting-desc">Laser blasts, explosions, warp phase & alarms (0% – 100%)</p>
+                        </div>
+                        <div class="setting-control">
+                            <input type="range" id="sfxVolumeSlider" min="0" max="1" step="0.05" value="0.8" class="cyber-range" />
+                            <span id="sfxVolumeVal" class="setting-value-badge">80%</span>
                         </div>
                     </div>
                 </div>

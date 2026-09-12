@@ -26,6 +26,7 @@ export class Ship {
         this.fireCooldown = 0;
         this.shieldHp = 0;
         this.maxShieldHp = 0;
+        this.speedMultiplier = 1.0; // Configurable ship speed / thruster multiplier
 
         this.invulnerableTimer = 0;
         this.specialCooldown = 0;
@@ -75,15 +76,19 @@ export class Ship {
         this.angle += diff * lerpFactor;
     }
 
-    thrust() {
-        this.vx += Math.cos(this.angle) * this.thrustPower;
-        this.vy += Math.sin(this.angle) * this.thrustPower;
+    thrust(powerScale = 1.0) {
+        const sm = this.speedMultiplier || 1.0;
+        const effThrust = this.thrustPower * sm * Math.max(0.15, Math.min(1.0, powerScale));
+        const effMaxSpeed = this.maxSpeed * sm;
+
+        this.vx += Math.cos(this.angle) * effThrust;
+        this.vy += Math.sin(this.angle) * effThrust;
 
         // Cap velocity
         const spd = Math.hypot(this.vx, this.vy);
-        if (spd > this.maxSpeed) {
-            this.vx = (this.vx / spd) * this.maxSpeed;
-            this.vy = (this.vy / spd) * this.maxSpeed;
+        if (spd > effMaxSpeed) {
+            this.vx = (this.vx / spd) * effMaxSpeed;
+            this.vy = (this.vy / spd) * effMaxSpeed;
         }
         this.isThrusting = true;
     }

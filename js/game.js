@@ -34,6 +34,7 @@ class Game {
         this.highScore = parseInt(localStorage.getItem('asteroidsHiScore') || '0');
         this.totalCrystals = parseInt(localStorage.getItem('asteroidsTotalCrystals') || '0');
         this.sensitivity = parseFloat(localStorage.getItem('asteroidsSensitivity') || '1.0');
+        this.shipSpeed = parseFloat(localStorage.getItem('asteroidsShipSpeed') || '1.0');
         this.wave = 1;
         this.lives = 3;
         this.crystalCount = 0;
@@ -68,6 +69,8 @@ class Game {
         this._updateShipCardsUI();
         this._hideBossHealthBar();
         this._updateHUDVisibility();
+        this._initAudioUI();
+        audio.playMusic('menu');
         this._loop();
     }
 
@@ -102,6 +105,15 @@ class Game {
         if (!prompt) return;
         const isPortrait = window.innerHeight > window.innerWidth && window.innerWidth <= 900;
         prompt.style.display = isPortrait ? 'flex' : 'none';
+    }
+
+    _initAudioUI() {
+        const soundIcon = document.getElementById('soundIcon');
+        if (soundIcon) {
+            soundIcon.innerHTML = audio.enabled
+                ? '<i class="fa-solid fa-volume-high"></i>'
+                : '<i class="fa-solid fa-volume-xmark"></i>';
+        }
     }
 
     _triggerHaptic(type = 'tap') {
@@ -164,6 +176,7 @@ class Game {
         this.shop = new Shop();
 
         this.ship = new Ship(this.W / 2, this.H / 2, this.shipType);
+        this.ship.speedMultiplier = this.shipSpeed;
         this.ship.invulnerableTimer = 200;
         this.shop.applyToShip(this.ship);
         this.aimWithMouse = false;
@@ -177,6 +190,8 @@ class Game {
         } else {
             this._announceWave(`WAVE 1`, () => this._spawnWave(1));
         }
+
+        audio.playMusic(this.mode === GAME_MODES.BOSSRUSH ? 'boss' : 'combat');
 
         this.state = 'playing';
         this._updateHUDVisibility();
@@ -240,6 +255,7 @@ class Game {
         this.boss = new BossMothership(this.W / 2, 130);
         this._setWaveBadge(`⚠️ BOSS WAVE ${this.wave}`);
         audio.playBossAlarm();
+        audio.playMusic('boss');
 
         const bc = document.getElementById('bossHealthContainer');
         if (bc) {
@@ -278,6 +294,7 @@ class Game {
             setTimeout(() => this._gameOver(), 800);
         } else {
             this.ship = new Ship(this.W / 2, this.H / 2, this.shipType);
+            this.ship.speedMultiplier = this.shipSpeed;
             this.ship.invulnerableTimer = 200;
             this.shop.applyToShip(this.ship);
             this._updateHUD();
@@ -287,6 +304,7 @@ class Game {
     _gameOver() {
         this.state = 'gameover';
         this._hideBossHealthBar();
+        audio.playMusic('gameover');
         const isHiScore = this.score > this.highScore;
         if (isHiScore) {
             this.highScore = this.score;
@@ -323,6 +341,7 @@ class Game {
     pause() {
         if (this.state !== 'playing') return;
         this.state = 'paused';
+        audio.setMuffled(true);
         const modal = document.getElementById('statusModal');
         if (modal) {
             modal.style.display = 'flex';
@@ -333,6 +352,7 @@ class Game {
     resume() {
         if (this.state !== 'paused') return;
         this.state = 'playing';
+        audio.setMuffled(false);
         const m = document.getElementById('statusModal');
         m.style.display = 'none';
         m.classList.remove('active');
@@ -399,10 +419,11 @@ class Game {
         // ---- Touch joystick steering + thrust ----
         if (this.touchJoystick.active) {
             const mag = Math.hypot(this.touchJoystick.dx, this.touchJoystick.dy);
-            if (mag > 8) {
+            if (mag > 6) {
                 const jAngle = Math.atan2(this.touchJoystick.dy, this.touchJoystick.dx);
                 this.ship.steerToward(jAngle, 0.45 * this.sensitivity);
-                this.ship.thrust();
+                const powerScale = Math.min(1.0, (mag - 6) / 38);
+                this.ship.thrust(powerScale);
                 this.ship.isThrusting = true;
                 this.particles.spawnThrusterTrail(this.ship.x, this.ship.y, this.ship.angle, '#38bdf8');
             }
@@ -537,6 +558,7 @@ class Game {
                         this.score += 5000;
                         this.boss = null;
                         this._hideBossHealthBar();
+                        audio.playMusic('combat');
                         this._updateHUD();
                         setTimeout(() => this._nextWave(), 1500);
                     }
@@ -1288,6 +1310,7 @@ class Game {
         const openHangar = () => {
             this._triggerHaptic('tap');
             this.state = 'menu';
+            audio.playMusic('menu');
             this._updateHUDVisibility();
             const startScreen = document.getElementById('startScreen');
             const hangarScreen = document.getElementById('hangarScreen');
@@ -1305,6 +1328,7 @@ class Game {
         const closeHangar = () => {
             this._triggerHaptic('tap');
             this.state = 'menu';
+            audio.playMusic('menu');
             this._updateHUDVisibility();
             const startScreen = document.getElementById('startScreen');
             const hangarScreen = document.getElementById('hangarScreen');
@@ -1407,7 +1431,23 @@ class Game {
             });
         });
 
-        // Settings Modal & Sensitivity Controls
+        // Settings Modal & Sliders Controls
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValBadge = document.getElementById('speedVal');
+        if (speedSlider && speedValBadge) {
+            speedSlider.value = String(this.shipSpeed);
+            speedValBadge.textContent = `${this.shipSpeed.toFixed(2)}x`;
+
+            speedSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                this.shipSpeed = val;
+                speedValBadge.textContent = `${val.toFixed(2)}x`;
+                localStorage.setItem('asteroidsShipSpeed', String(val));
+                if (this.ship) this.ship.speedMultiplier = val;
+                this._triggerHaptic('tap');
+            });
+        }
+
         const slider = document.getElementById('sensitivitySlider');
         const valBadge = document.getElementById('sensitivityVal');
         if (slider && valBadge) {
@@ -1419,6 +1459,35 @@ class Game {
                 this.sensitivity = val;
                 valBadge.textContent = `${val.toFixed(1)}x`;
                 localStorage.setItem('asteroidsSensitivity', String(val));
+                this._triggerHaptic('tap');
+            });
+        }
+
+        const musicSlider = document.getElementById('musicVolumeSlider');
+        const musicValBadge = document.getElementById('musicVolumeVal');
+        if (musicSlider && musicValBadge) {
+            musicSlider.value = String(audio.musicVolume);
+            musicValBadge.textContent = `${Math.round(audio.musicVolume * 100)}%`;
+
+            musicSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                audio.setMusicVolume(val);
+                musicValBadge.textContent = `${Math.round(val * 100)}%`;
+                this._triggerHaptic('tap');
+            });
+        }
+
+        const sfxSlider = document.getElementById('sfxVolumeSlider');
+        const sfxValBadge = document.getElementById('sfxVolumeVal');
+        if (sfxSlider && sfxValBadge) {
+            sfxSlider.value = String(audio.sfxVolume);
+            sfxValBadge.textContent = `${Math.round(audio.sfxVolume * 100)}%`;
+
+            sfxSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                audio.setSfxVolume(val);
+                sfxValBadge.textContent = `${Math.round(val * 100)}%`;
+                audio.playButtonClick();
                 this._triggerHaptic('tap');
             });
         }
@@ -1570,12 +1639,16 @@ class Game {
             });
         });
 
-        // Sound
-        document.getElementById('soundBtn').addEventListener('click', () => {
-            this._triggerHaptic('tap');
-            const on = audio.toggleSound();
-            document.getElementById('soundIcon').innerHTML = on ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
-        });
+        // Sound button in Top HUD
+        const soundBtn = document.getElementById('soundBtn');
+        const soundIcon = document.getElementById('soundIcon');
+        if (soundBtn && soundIcon) {
+            soundBtn.addEventListener('click', () => {
+                this._triggerHaptic('tap');
+                const on = audio.toggleSound();
+                soundIcon.innerHTML = on ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark"></i>';
+            });
+        }
 
         // Touch action buttons
         const fireBtn = document.getElementById('touchFireBtn');
