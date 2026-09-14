@@ -43,7 +43,7 @@ class SoundEngine {
         this.bgmAudio = null;
         this.bgmSourceNode = null;
         this.bgmConnectedToWebAudio = false;
-        this.bgmTrackUrl = 'public/luxaeterna2026-vast-liminal-void-563751.mp3';
+        this.bgmTrackUrl = 'audio/luxaeterna2026-vast-liminal-void-563751.mp3';
 
         // Cosmic Drone Generator Nodes
         this.droneGain = null;
