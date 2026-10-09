@@ -1,6 +1,9 @@
-// ============================================
-// ASTEROIDS GAME ENTITIES - REFINED
-// ============================================
+const isMobileDevice = typeof window !== 'undefined' && (
+    window.innerWidth <= 850 ||
+    window.innerHeight <= 550 ||
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    ('ontouchstart' in window && window.innerWidth <= 1024)
+);
 
 export class Ship {
     constructor(x, y, type = 'viper') {
@@ -14,11 +17,13 @@ export class Ship {
         this.vy = 0;
         this.isThrusting = false;
 
-        // Base stats (overridden per ship type)
+        // Base stats (calibrated for mobile touchscreen comfort)
+        const mobileThrustScale = isMobileDevice ? 0.65 : 1.0;
+        const mobileSpeedScale = isMobileDevice ? 0.75 : 1.0;
         this.rotationSpeed = 0.07;
-        this.thrustPower = 0.32;
-        this.maxSpeed = 9;
-        this.friction = 0.982;
+        this.thrustPower = 0.32 * mobileThrustScale;
+        this.maxSpeed = 9 * mobileSpeedScale;
+        this.friction = isMobileDevice ? 0.970 : 0.982; // Slightly higher space-drag on mobile to prevent uncontrollable skidding
 
         // Upgradable stats
         this.laserPower = 1;
@@ -36,10 +41,13 @@ export class Ship {
     }
 
     configureShipType(type) {
+        const mobileThrustScale = isMobileDevice ? 0.65 : 1.0;
+        const mobileSpeedScale = isMobileDevice ? 0.75 : 1.0;
+
         switch (type) {
             case 'titan':
-                this.thrustPower = 0.24;
-                this.maxSpeed = 7;
+                this.thrustPower = 0.24 * mobileThrustScale;
+                this.maxSpeed = 7 * mobileSpeedScale;
                 this.radius = 22;
                 this.rotationSpeed = 0.055;
                 this.maxShieldHp = 3;
@@ -47,15 +55,15 @@ export class Ship {
                 this.fireRateDelay = 11; // Dual cannon, slightly faster
                 break;
             case 'quantum':
-                this.thrustPower = 0.38;
-                this.maxSpeed = 11;
+                this.thrustPower = 0.38 * mobileThrustScale;
+                this.maxSpeed = 11 * mobileSpeedScale;
                 this.radius = 15;
                 this.rotationSpeed = 0.09;
                 this.fireRateDelay = 9;
                 break;
             default: // viper
-                this.thrustPower = 0.35;
-                this.maxSpeed = 10;
+                this.thrustPower = 0.35 * mobileThrustScale;
+                this.maxSpeed = 10 * mobileSpeedScale;
                 this.radius = 18;
                 this.rotationSpeed = 0.075;
                 this.fireRateDelay = 13;
@@ -77,8 +85,10 @@ export class Ship {
     }
 
     thrust(powerScale = 1.0) {
-        const sm = this.speedMultiplier || 1.0;
-        const effThrust = this.thrustPower * sm * Math.max(0.15, Math.min(1.0, powerScale));
+        const sm = this.speedMultiplier !== undefined ? this.speedMultiplier : 1.0;
+        // Allow smooth scaling all the way down to 0, no hard 0.15 clamp
+        const clampedScale = Math.max(0.0, Math.min(1.0, powerScale));
+        const effThrust = this.thrustPower * sm * clampedScale;
         const effMaxSpeed = this.maxSpeed * sm;
 
         this.vx += Math.cos(this.angle) * effThrust;
@@ -181,8 +191,6 @@ export class Ship {
     }
 }
 
-const isMobileDevice = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 550 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
-
 export class Bullet {
     constructor(x, y, angle, power = 1, isEnemy = false, customSpeed = null) {
         this.x = x;
@@ -257,10 +265,10 @@ export class Asteroid {
             this.points = 400;
         }
 
-        // Progressively faster per wave (tuned 0.75x for mobile touchscreen comfort)
+        // Progressively faster per wave (tuned for smooth progression and mobile touchscreen comfort)
         const mobileScale = isMobileDevice ? 0.75 : 1.0;
-        const baseSpeed = (Math.random() * 1.2 + 0.7) * (size === 'small' ? 1.7 : 1) * mobileScale;
-        const waveBonus = Math.min((waveFactor - 1) * 0.1, 1.2) * mobileScale;
+        const baseSpeed = (Math.random() * 0.9 + 0.6) * (size === 'small' ? 1.6 : 1) * mobileScale;
+        const waveBonus = Math.min((waveFactor - 1) * 0.08, 1.4) * mobileScale;
         const speed = baseSpeed + waveBonus;
 
         const angle = Math.random() * Math.PI * 2;

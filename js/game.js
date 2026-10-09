@@ -34,7 +34,8 @@ class Game {
         this.highScore = parseInt(localStorage.getItem('asteroidsHiScore') || '0');
         this.totalCrystals = parseInt(localStorage.getItem('asteroidsTotalCrystals') || '0');
         this.sensitivity = parseFloat(localStorage.getItem('asteroidsSensitivity') || '1.0');
-        this.shipSpeed = parseFloat(localStorage.getItem('asteroidsShipSpeed') || '1.0');
+        const savedSpeed = parseFloat(localStorage.getItem('asteroidsShipSpeed') || '1.0');
+        this.shipSpeed = (!isNaN(savedSpeed) && savedSpeed >= 0.1 && savedSpeed <= 1.5) ? savedSpeed : 1.0;
         this.wave = 1;
         this.lives = 3;
         this.crystalCount = 0;
@@ -158,6 +159,7 @@ class Game {
         this.lives = SHIP_LIVES[this.mode] || 3;
         this.crystalCount = 0;
         this.asteroidsDestroyed = 0;
+        this.waveTargetsDestroyed = 0;
         this.bombs = 2;
         this.timeLeft = TIME_RUSH_LIMIT;
         this.timeTicker = 0;
@@ -201,6 +203,7 @@ class Game {
     _nextWave() {
         if (this.state !== 'playing') return;
         this.wave++;
+        this.waveTargetsDestroyed = 0;
         this.bullets = [];
         this.enemies = [];
         this.ufos = [];
@@ -236,8 +239,12 @@ class Game {
     }
 
     _spawnWave(wave) {
-        const count = Math.min(4 + wave, 16);
+        // Initial large asteroid spawn corresponds directly to level number, capped at 10
+        const count = Math.min(Math.max(1, wave), 10);
         this.initialWaveAsteroidCount = count;
+        this.waveTargetsTotal = count * 10;
+        this.waveTargetsDestroyed = 0;
+
         for (let i = 0; i < count; i++) {
             let x, y, attempts = 0;
             do {
@@ -422,10 +429,15 @@ class Game {
             if (mag > 6) {
                 const jAngle = Math.atan2(this.touchJoystick.dy, this.touchJoystick.dx);
                 this.ship.steerToward(jAngle, 0.45 * this.sensitivity);
-                const powerScale = Math.min(1.0, (mag - 6) / 38);
-                this.ship.thrust(powerScale);
-                this.ship.isThrusting = true;
-                this.particles.spawnThrusterTrail(this.ship.x, this.ship.y, this.ship.angle, '#38bdf8');
+
+                // Two-tier joystick: inner ring (6-16px) is fine aiming without thrusting.
+                // Outer zone (16-46px) engages smooth progressive thrust with ease-in curve.
+                if (mag > 16) {
+                    const powerScale = Math.min(1.0, Math.pow((mag - 16) / 28, 1.5));
+                    this.ship.thrust(powerScale);
+                    this.ship.isThrusting = true;
+                    this.particles.spawnThrusterTrail(this.ship.x, this.ship.y, this.ship.angle, '#38bdf8');
+                }
             }
         }
 
@@ -607,11 +619,14 @@ class Game {
             if (fill) fill.style.width = '100%';
             return;
         }
-        const count = this.asteroids.length + this.ufos.length;
-        if (obj) obj.textContent = `ASTEROIDS: ${count} REMAINING`;
-        const initial = Math.max(1, this.initialWaveAsteroidCount || 4);
-        const destroyed = Math.max(0, initial - count);
-        const pct = Math.max(0, Math.min(100, Math.floor((destroyed / initial) * 100)));
+        if (obj) {
+            let label = `ASTEROIDS: ${this.asteroids.length} REMAINING`;
+            if (this.ufos.length > 0) label += ` (+${this.ufos.length} UFO)`;
+            obj.textContent = label;
+        }
+        const total = Math.max(1, (this.initialWaveAsteroidCount || 1) * 10);
+        const destroyed = Math.min(total, this.waveTargetsDestroyed || 0);
+        const pct = Math.max(0, Math.min(100, Math.floor((destroyed / total) * 100)));
         if (fill) fill.style.width = `${pct}%`;
     }
 
@@ -682,6 +697,7 @@ class Game {
         const earned = a.points * multiplier;
         this.score += earned;
         this.asteroidsDestroyed++;
+        this.waveTargetsDestroyed = (this.waveTargetsDestroyed || 0) + 1;
         this.asteroids.splice(idx, 1);
 
         const colors = { large: '#a855f7', medium: '#38bdf8', small: '#00f5d4' };
@@ -1435,6 +1451,9 @@ class Game {
         const speedSlider = document.getElementById('speedSlider');
         const speedValBadge = document.getElementById('speedVal');
         if (speedSlider && speedValBadge) {
+            speedSlider.min = '0.1';
+            speedSlider.max = '1.5';
+            speedSlider.step = '0.05';
             speedSlider.value = String(this.shipSpeed);
             speedValBadge.textContent = `${this.shipSpeed.toFixed(2)}x`;
 
