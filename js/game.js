@@ -1010,7 +1010,7 @@ class Game {
         const mobScore = document.getElementById('mobileScore');
         const mobCryst = document.getElementById('mobileCrystals');
         if (mobScore) mobScore.textContent = fmt(this.score);
-        if (mobCryst) mobCryst.innerHTML = `<i class="fa-solid fa-gem cyan-text"></i> ${fmt(this.crystalCount)}`;
+        if (mobCryst) mobCryst.textContent = fmt(this.crystalCount);
 
         const vaultDisplay = document.getElementById('vaultCrystalDisplay');
         if (vaultDisplay) vaultDisplay.innerHTML = `<i class="fa-solid fa-gem cyan-text"></i> ${fmt(this.totalCrystals)}`;

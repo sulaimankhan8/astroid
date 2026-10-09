@@ -369,6 +369,10 @@ body, html {
     gap: 12px;
 }
 
+.mobile-stat-pill {
+    display: none;
+}
+
 .stat-box {
     background: var(--surface-glass);
     border: 1px solid var(--surface-border);
