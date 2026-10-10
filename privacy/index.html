@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="theme-color" content="#05070e" />
+    <title>Privacy Policy - Asteroids Deluxe: Cyber Space Warfare</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <style>
+        :root {
+            --bg-deep: #05070e;
+            --bg-card: rgba(12, 17, 32, 0.85);
+            --border-glow: rgba(0, 240, 255, 0.25);
+            --accent-cyan: #00f0ff;
+            --accent-gold: #ffbe0b;
+            --accent-magenta: #ff007f;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(255, 0, 127, 0.08) 0%, transparent 40%),
+                linear-gradient(to bottom, #03050a, #070a14);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.65rem 1.25rem;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid var(--border-glow);
+            border-radius: 8px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            transform: translateX(-3px);
+        }
+
+        .brand-badge {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.08);
+            backdrop-filter: blur(12px);
+        }
+
+        .header-card h1 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .header-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .content-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+        }
+
+        .section {
+            margin-bottom: 2.2rem;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section h2 {
+            font-family: var(--font-display);
+            color: var(--accent-cyan);
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+            padding-bottom: 0.4rem;
+        }
+
+        .section p {
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .section ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 1rem;
+        }
+
+        .section ul li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.65rem;
+            color: var(--text-main);
+        }
+
+        .section ul li::before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        .highlight-box {
+            background: rgba(0, 240, 255, 0.05);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.25rem 0;
+        }
+
+        .highlight-box p {
+            margin-bottom: 0;
+            color: #e6faff;
+            font-size: 0.95rem;
+        }
+
+        .contact-box {
+            background: rgba(255, 190, 11, 0.06);
+            border: 1px dashed rgba(255, 190, 11, 0.3);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+            .header-card, .content-card {
+                padding: 1.5rem;
+            }
+            .header-card h1 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <a href="../" class="btn-back">
+                <i class="fa-solid fa-arrow-left"></i> Return to Game
+            </a>
+            <div class="brand-badge">
+                <i class="fa-solid fa-gamepad"></i> Asteroids Deluxe
+            </div>
+        </nav>
+
+        <header class="header-card">
+            <h1>Privacy Policy</h1>
+            <div class="header-meta">
+                <span><i class="fa-solid fa-calendar-check"></i> Last Updated: October 2026</span>
+                <span><i class="fa-solid fa-shield-halved"></i> Asteroids Deluxe: Cyber Space Warfare</span>
+            </div>
+        </header>
+
+        <main class="content-card">
+            <section class="section">
+                <h2><i class="fa-solid fa-circle-info"></i> 1. Overview</h2>
+                <p>Welcome to <strong>Asteroids Deluxe: Cyber Space Warfare</strong>. We respect your privacy and are committed to protecting it. This Privacy Policy explains our practices regarding user data, game storage, and your privacy rights when playing our game.</p>
+                <div class="highlight-box">
+                    <p><strong>Core Privacy Guarantee:</strong> Asteroids Deluxe runs entirely in your web browser. We do not require accounts, we do not collect personal identities, and we do not sell your personal data.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2><i class="fa-solid fa-database"></i> 2. Information We Store Locally</h2>
+                <p>To provide a smooth gaming experience without requiring a server login, the game uses your device's browser <strong>Local Storage</strong> solely for gameplay continuity:</p>
+                <ul>
+                    <li><strong>High Scores & Combat Stats:</strong> Saved locally on your device to track your best runs and achievements.</li>
+                    <li><strong>Hangar & Upgrades:</strong> Crystals collected and unlocked starfighter configurations.</li>
+                    <li><strong>Audio & Settings:</strong> Volume preferences and sound toggle states.</li>
+                </ul>
+                <p>This data stays on your local device. It is never transmitted to any external marketing servers.</p>
+            </section>
+
+            <section class="section">
+                <h2><i class="fa-solid fa-network-wired"></i> 3. Third-Party Services & Assets</h2>
+                <p>The game loads static assets and libraries over secure Content Delivery Networks (CDNs) to ensure fast loading times:</p>
+                <ul>
+                    <li><strong>Google Fonts:</strong> For game typography. Google may log standard IP request details to serve font files.</li>
+                    <li><strong>cdnjs / FontAwesome:</strong> For visual icons used in the game interface.</li>
+                </ul>
+                <p>We do not embed third-party advertising trackers or invasive analytics SDKs into the gameplay.</p>
+            </section>
+
+            <section class="section">
+                <h2><i class="fa-solid fa-child"></i> 4. Children's Privacy (COPPA Compliance)</h2>
+                <p>Our game is designed to be safe for players of all ages. In accordance with the Children's Online Privacy Protection Act (COPPA) and international standards, we do not knowingly solicit, collect, or process personal identifiable information from children under the age of 13.</p>
+            </section>
+
+            <section class="section">
+                <h2><i class="fa-solid fa-trash-can"></i> 5. Data Control & Deletion</h2>
+                <p>Because all gameplay data is stored in your web browser's local cache, you maintain total control over your data. You can delete all scores, progress, and saved settings at any time by clearing your browser's site data or cookies for this domain.</p>
+            </section>
+
+            <section class="section">
+                <h2><i class="fa-solid fa-envelope"></i> 6. Contact & Updates</h2>
+                <p>We may update this policy periodically to reflect game updates or regulatory changes. Continued play indicates acceptance of any revisions.</p>
+                <div class="contact-box">
+                    <p>If you have any questions or concerns regarding this policy, please reach out via our official project support channels or repository contact.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2026 Asteroids Deluxe: Cyber Space Warfare. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
